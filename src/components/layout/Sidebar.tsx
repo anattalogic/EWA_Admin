@@ -10,13 +10,16 @@ export function Sidebar() {
     { name: 'Dashboard', icon: 'fa-chart-line', category: 'Principal' },
     { name: 'Company Setup', icon: 'fa-building', category: 'Principal' },
     { name: 'Employees Accrual', icon: 'fa-users', category: 'Principal' },
+    { name: 'Budget Control', icon: 'fa-vault', category: 'Principal' },
     
     { name: 'EWA Requests', icon: 'fa-envelope-open-text', category: 'Finance & Ledger' },
     { name: 'Disbursement', icon: 'fa-paper-plane', category: 'Finance & Ledger' },
     { name: 'Repayments', icon: 'fa-file-invoice-dollar', category: 'Finance & Ledger' },
+    { name: 'Fee Management', icon: 'fa-hand-holding-dollar', category: 'Finance & Ledger' },
     
     { name: 'General Ledger', icon: 'fa-scale-balanced', category: 'Operations' },
     { name: 'Banking & Reconcile', icon: 'fa-building-columns', category: 'Operations' },
+    { name: 'Reports Center', icon: 'fa-file-contract', category: 'Operations' },
     { name: 'Workflow Builder', icon: 'fa-diagram-project', category: 'Operations' },
     
     { name: 'Rules Compliance', icon: 'fa-sliders', category: 'Automation' },

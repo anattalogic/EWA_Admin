@@ -16,6 +16,9 @@ import { BankingModule } from "../banking/BankingModule";
 import { WorkflowModule } from "../workflow/WorkflowModule";
 import { RulesModule } from "../rules/RulesModule";
 import { ConfigModule } from "../configuration/ConfigModule";
+import { BudgetModule } from "../budget/BudgetModule";
+import { FeeModule } from "../fees/FeeModule";
+import { ReportsModule } from "../reports/ReportsModule";
 
 export function AppShell() {
   const { activeTab } = useEwaStore();
@@ -28,16 +31,22 @@ export function AppShell() {
         return <CompanyModule />;
       case 'Employees Accrual':
         return <EmployeeModule />;
+      case 'Budget Control':
+        return <BudgetModule />;
       case 'EWA Requests':
         return <RequestModule />;
       case 'Disbursement':
         return <DisbursementModule />;
       case 'Repayments':
         return <RepaymentModule />;
+      case 'Fee Management':
+        return <FeeModule />;
       case 'General Ledger':
         return <LedgerModule />;
       case 'Banking & Reconcile':
         return <BankingModule />;
+      case 'Reports Center':
+        return <ReportsModule />;
       case 'Workflow Builder':
         return <WorkflowModule />;
       case 'Rules Compliance':

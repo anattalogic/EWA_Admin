@@ -6,6 +6,7 @@ export type Company = {
   status: 'Active' | 'Pending' | 'Suspended';
   creditLimit: number;
   availableLimit: number;
+  budgetUtilized: number;
   prefundBalance: number;
   feePolicyId: string;
   bankAccount: string;

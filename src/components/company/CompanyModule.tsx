@@ -23,6 +23,7 @@ export function CompanyModule() {
       status: 'Active',
       creditLimit: Number(creditLimit),
       availableLimit: Number(creditLimit),
+      budgetUtilized: 0,
       prefundBalance: Number(prefundBalance),
       feePolicyId: 'FP-001',
       bankAccount: bankAccount || 'US-OPER-0000',
