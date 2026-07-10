@@ -2,23 +2,47 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useEwaStore } from '../../app/store';
 
 export function RightPanel() {
-  const { aiMessages, sendAiMessage, bankAccounts, glAccounts, activityLogs } = useEwaStore();
-  const [inputText, setInputText] = useState('');
-  const chatEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [aiMessages]);
-
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputText.trim()) return;
-    sendAiMessage(inputText);
-    setInputText('');
-  };
+  const { bankAccounts, glAccounts, activityLogs, activeTab } = useEwaStore();
 
   const prefundBalance = bankAccounts.find(b => b.type === 'Prefund')?.balance || 0;
   const receivableBalance = glAccounts.find(g => g.id === '1400')?.balance || 0;
+
+  const getContextualHelp = () => {
+    switch (activeTab) {
+      case 'Dashboard':
+        return {
+          title: 'Liquidity Overview',
+          description: 'Monitor real-time prefund availability vs. employee credit exposure. Ensure prefund vaults are topped up before peak payroll cycles.',
+          actions: ['View Liquidity Forecast', 'Vault Transfer Protocol']
+        };
+      case 'Companies':
+        return {
+          title: 'Organization Onboarding',
+          description: 'Configure credit limits and fee policies for corporate partners. Note: Changes to credit lines require secondary treasury approval.',
+          actions: ['Credit Policy Documentation', 'KYC Verification Guide']
+        };
+      case 'EWA Requests':
+        return {
+          title: 'Disbursement Management',
+          description: 'Review manual holds and risk alerts. Real-time payment (RTP) channels require active clearing house connectivity.',
+          actions: ['Fraud Detection Rules', 'ACH Timing Matrix']
+        };
+      case 'General Ledger':
+        return {
+          title: 'Double-Entry Accounting',
+          description: 'All system transactions follow balanced bookkeeping. Verify DR 1400 vs CR 1200 matches for the current period.',
+          actions: ['GL Chart of Accounts', 'Trial Balance Guide']
+        };
+      default:
+        return {
+          title: 'System Resources',
+          description: 'Welcome to the EWA Enterprise Finance Portal. Access documentation and system health metrics here.',
+          actions: ['User Manual', 'API Documentation']
+        };
+    }
+  };
+
+  const help = getContextualHelp();
 
   return (
     <aside className="w-64 border-l border-slate-200 bg-slate-50 p-4 shrink-0 flex flex-col justify-between overflow-y-auto space-y-6 h-full">
@@ -41,44 +65,43 @@ export function RightPanel() {
         </div>
       </section>
 
-      {/* Central section: Live AI assistant feed */}
-      <section className="flex-1 flex flex-col min-h-0 bg-white border border-slate-200 rounded-lg p-3 shadow-sm justify-between">
+      {/* Central section: Knowledge Center & Wizard */}
+      <section className="flex-1 flex flex-col min-h-0 bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
         <div className="flex items-center gap-2 pb-2 border-b">
-          <i className="fa-solid fa-brain-circuit text-blue-600 animate-pulse text-sm"></i>
-          <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Treasury Intelligence AI</span>
+          <i className="fa-solid fa-book-bookmark text-blue-600 text-sm"></i>
+          <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Knowledge Center</span>
         </div>
 
-        {/* Message timeline container */}
-        <div className="flex-1 overflow-y-auto space-y-3 my-3 pr-1 max-h-56">
-          {aiMessages.map(msg => (
-            <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
-              <div className={`p-2 rounded-lg text-[11px] leading-relaxed max-w-[90%] ${
-                msg.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-800'
-              }`}>
-                {msg.text}
-              </div>
-              <span className="text-[8px] text-slate-400 mt-0.5">{msg.timestamp}</span>
+        <div className="py-3 space-y-4">
+          <div className="space-y-1">
+            <h4 className="text-xs font-bold text-slate-900">{help.title}</h4>
+            <p className="text-[10px] text-slate-500 leading-relaxed italic">
+              {help.description}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Helpful Resources</span>
+            <div className="space-y-1.5">
+              {help.actions.map((action, i) => (
+                <button key={i} className="w-full text-left p-1.5 text-[10px] text-slate-600 bg-slate-50 border border-slate-200 rounded hover:bg-slate-100 transition flex items-center justify-between">
+                  {action}
+                  <i className="fa-solid fa-chevron-right text-[8px] text-slate-400"></i>
+                </button>
+              ))}
             </div>
-          ))}
-          <div ref={chatEndRef}></div>
-        </div>
+          </div>
 
-        {/* Submit quick questions */}
-        <form onSubmit={handleSend} className="flex gap-1.5 border-t pt-2">
-          <input 
-            type="text" 
-            placeholder="Query liquidity impact..."
-            value={inputText}
-            onChange={e => setInputText(e.target.value)}
-            className="flex-1 text-[11px] p-1.5 bg-slate-50 border rounded focus:outline-none focus:ring-1 focus:ring-blue-600"
-          />
-          <button 
-            type="submit" 
-            className="px-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs flex items-center justify-center transition"
-          >
-            <i className="fa-solid fa-paper-plane"></i>
-          </button>
-        </form>
+          <div className="pt-2">
+            <div className="bg-blue-50 border border-blue-100 rounded p-2 flex gap-2">
+              <i className="fa-solid fa-circle-info text-blue-400 text-xs mt-0.5"></i>
+              <div className="text-[9px] text-blue-800 leading-tight">
+                <strong>Oracle/SAP Integration</strong>
+                <p className="mt-1">Cloud connectors are active. Batch sync happens at 00:00 UTC.</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Bottom section: Active Activities logs */}

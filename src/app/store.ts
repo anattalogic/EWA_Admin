@@ -48,12 +48,8 @@ interface EwaStore {
   // Navigation active tab
   activeTab: string;
   
-  // AI assistant states
-  aiMessages: { id: string; sender: 'user' | 'assistant'; text: string; timestamp: string }[];
-  
   // Actions
   setActiveTab: (tab: string) => void;
-  sendAiMessage: (text: string) => void;
   
   // Business logic simulation actions
   addCompany: (company: Omit<Company, 'id' | 'createdDate'>) => void;
@@ -100,55 +96,7 @@ export const useEwaStore = create<EwaStore>((set, get) => ({
   
   activeTab: 'Dashboard',
   
-  aiMessages: [
-    {
-      id: 'msg-1',
-      sender: 'assistant',
-      text: 'Welcome to the EWA Enterprise Finance Intelligence system. I can run budget simulation scenarios, verify general ledger postings, or search employee metrics. What would you like to check today?',
-      timestamp: '09:00 AM'
-    }
-  ],
-  
   setActiveTab: (tab) => set({ activeTab: tab }),
-  
-  sendAiMessage: (text) => {
-    const newMessage = {
-      id: `msg-${Date.now()}`,
-      sender: 'user' as const,
-      text,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    
-    set((state) => ({ aiMessages: [...state.aiMessages, newMessage] }));
-    
-    // Simulate smart AI response based on keywords
-    setTimeout(() => {
-      let responseText = "I have analyzed your request. As an enterprise treasury assistant, I suggest checking the Disbursement queue for liquidity availability.";
-      const cleanText = text.toLowerCase();
-      
-      if (cleanText.includes('liquidity') || cleanText.includes('balance') || cleanText.includes('cash')) {
-        const prefundTotal = get().bankAccounts.find(b => b.type === 'Prefund')?.balance || 0;
-        responseText = `Current prefund liquidity is $${prefundTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}. This level is sufficient to handle the pending queue load ($${get().transactions.filter(t => t.status === 'Pending').reduce((sum, t) => sum + t.amount, 0).toLocaleString()} outstanding).`;
-      } else if (cleanText.includes('rule') || cleanText.includes('simulation') || cleanText.includes('tenure')) {
-        responseText = "Running dynamic rule engine simulator: If tenure is updated to > 3 months instead of 6, auto-approval rate will increase by estimated 14.2%, adding approximately $4,200 to weekly EWA request volume.";
-      } else if (cleanText.includes('ledger') || cleanText.includes('posting') || cleanText.includes('accounting')) {
-        responseText = "Ledger double-entries are completely balanced. For each EWA disbursement, we DR Employee Advance Receivable (1400) and CR EWA Prefund (1200) with a secondary credit CR Fee Revenue (4100). All systems in state-parity.";
-      } else if (cleanText.includes('reconcile') || cleanText.includes('match')) {
-        responseText = "I see 2 unreconciled bank statements matching incoming batch repayments. I recommend matching BNY Mellon clearing collections with the corresponding payroll export files.";
-      } else if (cleanText.includes('amazon') || cleanText.includes('sarah')) {
-        responseText = "Sarah Jenkins (EMP-101) has an accrued wage of $2,100 with a low risk score of 12. Auto-approval checks passed.";
-      }
-      
-      const assistantMessage = {
-        id: `msg-response-${Date.now()}`,
-        sender: 'assistant' as const,
-        text: responseText,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      
-      set((state) => ({ aiMessages: [...state.aiMessages, assistantMessage] }));
-    }, 1000);
-  },
   
   addCompany: (company) => set((state) => {
     const newId = `C-0${state.companies.length + 1}`;
