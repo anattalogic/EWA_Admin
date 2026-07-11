@@ -59,11 +59,21 @@ interface EwaStore {
   activeTab: string;
   activeSubTabs: Record<string, string>;
   isRightPanelOpen: boolean;
+
+  // Theme and Layout configurations
+  themePreset: 'sap-horizon' | 'fluent-windows' | 'macos-aqua' | 'mainframe-retro' | 'brutalist' | 'cosmic-slate';
+  layoutStructure: 'sidebar-top-tabs' | 'top-menu-hub' | 'compact-dock' | 'mdi-windowed';
+  tabStyle: 'underlined' | 'button-group' | 'segmented-pills' | 'stepper-steps' | 'submenu-vertical';
+  showTelemetry: boolean;
   
   // Actions
   setActiveTab: (tab: string) => void;
   setActiveSubTab: (tab: string, subTab: string) => void;
   toggleRightPanel: () => void;
+  setThemePreset: (theme: 'sap-horizon' | 'fluent-windows' | 'macos-aqua' | 'mainframe-retro' | 'brutalist' | 'cosmic-slate') => void;
+  setLayoutStructure: (layout: 'sidebar-top-tabs' | 'top-menu-hub' | 'compact-dock' | 'mdi-windowed') => void;
+  setTabStyle: (style: 'underlined' | 'button-group' | 'segmented-pills' | 'stepper-steps' | 'submenu-vertical') => void;
+  setShowTelemetry: (show: boolean) => void;
   
   // Business logic simulation actions
   addCompany: (company: Omit<Company, 'id' | 'createdDate'>) => void;
@@ -114,13 +124,21 @@ export const useEwaStore = create<EwaStore>((set, get) => ({
   
   activeTab: 'Dashboard',
   activeSubTabs: {},
-  isRightPanelOpen: true,
+  isRightPanelOpen: false,
+  themePreset: 'sap-horizon',
+  layoutStructure: 'sidebar-top-tabs',
+  tabStyle: 'underlined',
+  showTelemetry: true,
   
   setActiveTab: (tab) => set({ activeTab: tab }),
   setActiveSubTab: (tab, subTab) => set((state) => ({ 
     activeSubTabs: { ...state.activeSubTabs, [tab]: subTab } 
   })),
   toggleRightPanel: () => set((state) => ({ isRightPanelOpen: !state.isRightPanelOpen })),
+  setThemePreset: (themePreset) => set({ themePreset }),
+  setLayoutStructure: (layoutStructure) => set({ layoutStructure }),
+  setTabStyle: (tabStyle) => set({ tabStyle }),
+  setShowTelemetry: (showTelemetry) => set({ showTelemetry }),
   
   addCompany: (company) => set((state) => {
     const newId = `C-0${state.companies.length + 1}`;
