@@ -1,285 +1,213 @@
-import React from 'react';
-import { KPICard } from './KPICard';
+import React, { useState } from 'react';
 import { useEwaStore } from '../../app/store';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  LineChart, 
-  Line, 
-  PieChart, 
-  Pie, 
-  Cell,
-  Legend
-} from 'recharts';
+import { WorkflowWizard } from '../workflow/WorkflowWizard';
 
 export function DashboardModule() {
-  const { 
-    bankAccounts, 
-    transactions, 
-    glAccounts, 
-    employees, 
-    companies,
-    disburseTransaction 
-  } = useEwaStore();
+  const { companies, transactions, bankAccounts, glAccounts, tasks } = useEwaStore();
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
-  // Metrics calculation
+  const totalCreditLimit = companies.reduce((sum, c) => sum + c.creditLimit, 0);
   const totalPrefund = bankAccounts.find(b => b.type === 'Prefund')?.balance || 0;
-  const outstandingAdvance = employees.reduce((sum, e) => sum + e.outstanding, 0);
-  const totalReceivable = glAccounts.find(g => g.id === '1400')?.balance || 0;
-  const totalRevenue = glAccounts.find(g => g.id === '4100')?.balance || 0;
-  
-  const pendingRequests = transactions.filter(t => t.status === 'Pending' || t.status === 'Approved');
-  const pendingValue = pendingRequests.reduce((sum, t) => sum + t.amount, 0);
-  
-  // Chart Data preparation
-  const disbursementChartData = [
-    { name: 'Jan', amount: 145000 },
-    { name: 'Feb', amount: 182000 },
-    { name: 'Mar', amount: 210000 },
-    { name: 'Apr', amount: 195000 },
-    { name: 'May', amount: 240000 },
-    { name: 'Jun', amount: 285000 },
-    { name: 'Jul', amount: 320000 + outstandingAdvance }
-  ];
-
-  const bankAccountPieData = bankAccounts.map(ba => ({
-    name: ba.name,
-    value: ba.balance
-  }));
-
-  const COLORS = ['#1e3a8a', '#3b82f6', '#06b6d4', '#10b981'];
+  const pendingAmount = transactions.filter(t => t.status === 'Pending').reduce((sum, t) => sum + t.amount, 0);
+  const totalOutstanding = transactions.reduce((sum, t) => sum + t.outstanding, 0);
+  const employeeReceivable = glAccounts.find(g => g.id === '1400')?.balance || 0;
 
   return (
-    <div className="space-y-6">
-      {/* Dynamic Dashboard Page Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <nav className="flex gap-2 text-[11px] text-slate-400 uppercase tracking-wider mb-1 font-bold">
-            <span>Platform</span>
-            <span>/</span>
-            <span className="text-blue-600">Enterprise Dashboard</span>
-          </nav>
-          <h1 className="text-2xl font-bold font-display text-slate-900 leading-tight">Liquidity & Treasury Control</h1>
+    <div className="p-6 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500 relative">
+      
+      {/* Workflow Overlay */}
+      {selectedTaskId && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-end">
+          <div className="w-full max-w-xl h-full shadow-2xl animate-in slide-in-from-right duration-300">
+            <WorkflowWizard taskId={selectedTaskId} onClose={() => setSelectedTaskId(null)} />
+          </div>
         </div>
-        <div className="flex gap-2">
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-md text-xs font-bold text-emerald-800">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>LIVE BANK CORE PARITY</span>
+      )}
+
+      {/* Page Header (Fiori Style) */}
+      <div className="flex flex-col gap-1 mb-4">
+        <div className="flex items-center gap-2 text-[10px] text-sap-text-secondary uppercase tracking-widest font-bold">
+          <span>Treasury Management</span>
+          <i className="fa-solid fa-chevron-right text-[8px]"></i>
+          <span className="text-sap-primary">Executive Overview</span>
+        </div>
+        <h1 className="text-2xl font-semibold text-sap-text tracking-tight">Analytical Dashboard</h1>
+      </div>
+
+      {/* KPI Tiles Strip (SAP Pattern) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        {/* KPI Tile: Liquidity */}
+        <div className="sap-card p-4 flex flex-col justify-between hover:border-sap-primary cursor-pointer transition-colors group">
+          <div className="flex justify-between items-start">
+            <span className="text-[12px] font-bold text-sap-text-secondary uppercase tracking-tight">Net Liquidity</span>
+            <i className="fa-solid fa-chart-line text-sap-primary/40 group-hover:text-sap-primary transition-colors"></i>
+          </div>
+          <div className="mt-4">
+            <div className="text-2xl font-bold text-sap-text font-mono">${totalPrefund.toLocaleString()}</div>
+            <div className="flex items-center gap-1 mt-1">
+              <span className="text-[10px] text-sap-success font-bold">+2.4%</span>
+              <span className="text-[10px] text-sap-text-secondary">vs. last month</span>
+            </div>
+          </div>
+        </div>
+
+        {/* KPI Tile: Consolidated Outstanding */}
+        <div className="sap-card p-4 flex flex-col justify-between hover:border-sap-primary cursor-pointer transition-colors group">
+          <div className="flex justify-between items-start">
+            <span className="text-[12px] font-bold text-sap-text-secondary uppercase tracking-tight">Consolidated Outstanding</span>
+            <i className="fa-solid fa-receipt text-sap-error/40 group-hover:text-sap-error transition-colors"></i>
+          </div>
+          <div className="mt-4">
+            <div className="text-2xl font-bold text-sap-text font-mono">${totalOutstanding.toLocaleString()}</div>
+            <div className="text-[10px] text-sap-text-secondary mt-1">
+              Unsettled Balances (Net)
+            </div>
+          </div>
+        </div>
+
+        {/* KPI Tile: Pending Volume */}
+        <div className="sap-card p-4 flex flex-col justify-between hover:border-sap-primary cursor-pointer transition-colors group">
+          <div className="flex justify-between items-start">
+            <span className="text-[12px] font-bold text-sap-text-secondary uppercase tracking-tight">Pending Volume</span>
+            <i className="fa-solid fa-clock text-sap-info/40 group-hover:text-sap-info transition-colors"></i>
+          </div>
+          <div className="mt-4">
+            <div className="text-2xl font-bold text-sap-text font-mono">${pendingAmount.toLocaleString()}</div>
+            <div className="text-[10px] text-sap-text-secondary mt-1">
+              Count: <span className="font-bold text-sap-text">{transactions.filter(t => t.status === 'Pending').length} requests</span>
+            </div>
+          </div>
+        </div>
+
+        {/* KPI Tile: System Health */}
+        <div className="sap-card p-4 flex flex-col justify-between hover:border-sap-primary cursor-pointer transition-colors group">
+          <div className="flex justify-between items-start">
+            <span className="text-[12px] font-bold text-sap-text-secondary uppercase tracking-tight">System Status</span>
+            <i className="fa-solid fa-server text-sap-success/40 group-hover:text-sap-success transition-colors"></i>
+          </div>
+          <div className="mt-4">
+            <div className="text-lg font-bold text-sap-success flex items-center gap-2">
+              <span className="w-2 h-2 bg-sap-success rounded-full animate-pulse"></span>
+              Operational
+            </div>
+            <div className="text-[10px] text-sap-text-secondary mt-1 italic">
+              FedNow/RTP: Active
+            </div>
           </div>
         </div>
       </div>
 
-      {/* KPI Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard 
-          title="Available Prefund Liquidity" 
-          value={`$${totalPrefund.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
-          subtext="SVB & Chase vaults aggregated"
-          iconClass="fa-vault"
-          trend={{ value: 'Stable', type: 'neutral' }}
-          colorClass="border-blue-100"
-        />
-        <KPICard 
-          title="Outstanding EWA Advance" 
-          value={`$${outstandingAdvance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
-          subtext="Active wage withdrawal balances"
-          iconClass="fa-hand-holding-dollar"
-          trend={{ value: '+8.4% MoM', type: 'up' }}
-          colorClass="border-orange-100"
-        />
-        <KPICard 
-          title="Total Ledger Receivable" 
-          value={`$${totalReceivable.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
-          subtext="To be deducted in next cycle"
-          iconClass="fa-receipt"
-          trend={{ value: '99.8% Match', type: 'up' }}
-          colorClass="border-cyan-100"
-        />
-        <KPICard 
-          title="Aggregated EWA Revenue" 
-          value={`$${totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
-          subtext="Accumulated platform processing fees"
-          iconClass="fa-coins"
-          trend={{ value: '1.5% - 2.9% yield', type: 'up' }}
-          colorClass="border-emerald-100"
-        />
-      </div>
-
-      {/* Main Charts & Action Grid */}
+      {/* Main Content Grid (Slots) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Recharts Bar Chart: EWA Disbursements */}
-        <div className="bg-white p-5 border rounded-lg shadow-sm lg:col-span-2">
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <h3 className="text-sm font-bold text-slate-800">EWA Monthly Disbursements</h3>
-              <p className="text-[11px] text-slate-400">Past 7 fiscal intervals</p>
-            </div>
-            <div className="text-xs font-mono font-bold text-blue-600">
-              Total: ${(1737000 + outstandingAdvance).toLocaleString()}
+        {/* Main Chart Slot */}
+        <div className="lg:col-span-2 sap-card overflow-hidden flex flex-col">
+          <div className="p-4 border-b bg-slate-50 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-sap-text uppercase tracking-tight">Disbursement Velocity (14 Days)</h3>
+            <div className="flex gap-2">
+              <button className="px-3 py-1 bg-white border border-sap-border text-[10px] font-bold rounded hover:bg-slate-100 transition shadow-sm">Export PDF</button>
+              <button className="px-3 py-1 bg-sap-primary text-white text-[10px] font-bold rounded hover:bg-sap-primary/90 transition shadow-sm">View Full Data</button>
             </div>
           </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={disbursementChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
-                <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, 'Disbursed']} />
-                <Bar dataKey="amount" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="flex-1 min-h-[300px] p-6 flex flex-col">
+            <div className="flex-1 relative bg-slate-50 rounded border border-dashed border-slate-300 flex items-center justify-center">
+              <div className="text-center space-y-2">
+                <i className="fa-solid fa-chart-area text-slate-300 text-5xl"></i>
+                <p className="text-[11px] text-slate-400 font-medium italic">High-Fidelity Real-time Visualization Slot</p>
+              </div>
+            </div>
+            <div className="mt-4 flex gap-8 justify-center">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 bg-sap-primary rounded-sm"></span>
+                <span className="text-[11px] text-sap-text font-medium uppercase tracking-tighter">Automatic Payouts</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 bg-sap-warning rounded-sm"></span>
+                <span className="text-[11px] text-sap-text font-medium uppercase tracking-tighter">Manual Approvals</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Recharts Pie Chart: Treasury Allocation */}
-        <div className="bg-white p-5 border rounded-lg shadow-sm">
-          <h3 className="text-sm font-bold text-slate-800 mb-1">Aggregate Bank Allocations</h3>
-          <p className="text-[11px] text-slate-400 mb-4">Liquidity spread across custodial vaults</p>
-          <div className="h-56 relative flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={bankAccountPieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {bankAccountPieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="absolute text-center">
-              <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 block">Total Liquidity</span>
-              <span className="text-lg font-bold font-mono text-slate-900">
-                ${bankAccounts.reduce((sum, b) => sum + b.balance, 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+        {/* Side Panel Slot: Quick Actions & Alerts */}
+        <div className="space-y-6">
+          <div className="sap-card">
+            <div className="p-3 border-b bg-slate-50 flex justify-between items-center">
+              <h3 className="text-xs font-bold text-sap-text uppercase tracking-tight">Actionable Tasks</h3>
+              <span className="px-2 py-0.5 bg-blue-100 text-sap-primary text-[9px] font-bold rounded-full">
+                {tasks.filter(t => t.status === 'Pending').length}
               </span>
             </div>
-          </div>
-          <div className="mt-4 space-y-2">
-            {bankAccounts.map((ba, index) => (
-              <div key={ba.id} className="flex justify-between items-center text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
-                  <span className="text-slate-600 font-medium truncate max-w-[130px]">{ba.name}</span>
+            <div className="p-3 space-y-3">
+              {tasks.map(task => (
+                <button 
+                  key={task.id}
+                  onClick={() => setSelectedTaskId(task.id)}
+                  className="w-full text-left flex items-start gap-3 p-2 bg-white border border-sap-border rounded-sm hover:border-sap-primary hover:bg-blue-50 transition group"
+                >
+                  <div className={`p-2 rounded-sm ${
+                    task.priority === 'High' ? 'bg-red-50 text-sap-error' : 'bg-blue-50 text-sap-primary'
+                  }`}>
+                    <i className={`fa-solid ${task.type === 'BUDGET_REQUEST' ? 'fa-vault' : 'fa-clipboard-check'} text-xs`}></i>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-[11px] font-bold text-sap-text group-hover:text-sap-primary uppercase tracking-tight">{task.type.replace('_', ' ')}</div>
+                    <div className="text-[9px] text-sap-text-secondary font-mono mt-0.5">{task.id} • Assigned to you</div>
+                    <div className="flex items-center gap-2 mt-2">
+                       <span className={`px-1.5 py-0.5 rounded-sm text-[8px] font-bold uppercase ${
+                         task.status === 'Pending' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
+                       }`}>{task.status}</span>
+                       <span className="text-[8px] text-slate-400 italic">2h ago</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+              
+              <div className="flex items-center gap-3 p-2 bg-red-50 border-l-4 border-sap-error rounded-r shadow-sm">
+                <i className="fa-solid fa-triangle-exclamation text-sap-error text-sm"></i>
+                <div className="flex-1">
+                  <div className="text-[11px] font-bold text-red-900">Low Liquidity Warning</div>
+                  <div className="text-[9px] text-red-700">Prefund Account (C-01) below threshold.</div>
                 </div>
-                <span className="font-mono font-bold text-slate-900">${ba.balance.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span>
               </div>
-            ))}
+            </div>
+          </div>
+
+          <div className="sap-card">
+            <div className="p-3 border-b bg-slate-50">
+              <h3 className="text-xs font-bold text-sap-text uppercase tracking-tight">System Integrations</h3>
+            </div>
+            <div className="p-3 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-slate-100 rounded flex items-center justify-center">
+                    <i className="fa-solid fa-database text-sap-info text-sm"></i>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[11px] font-bold text-sap-text">Oracle Cloud</span>
+                    <span className="text-[9px] text-sap-text-secondary italic">Last Sync: 10m ago</span>
+                  </div>
+                </div>
+                <span className="text-[8px] font-bold text-sap-success uppercase">Active</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-slate-100 rounded flex items-center justify-center">
+                    <i className="fa-brands fa-aws text-orange-500 text-sm"></i>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[11px] font-bold text-sap-text">AWS Ledger</span>
+                    <span className="text-[9px] text-sap-text-secondary italic">Last Sync: 2m ago</span>
+                  </div>
+                </div>
+                <span className="text-[8px] font-bold text-sap-success uppercase">Active</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Action queues & Active queues preview */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Approved and Ready to Disburse */}
-        <div className="bg-white border rounded-lg shadow-sm overflow-hidden flex flex-col">
-          <div className="p-4 border-b bg-slate-50/70 flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <i className="fa-solid fa-bolt-lightning text-amber-500"></i>
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Fast Release Queue</h3>
-            </div>
-            <span className="text-[10px] font-mono font-bold bg-amber-50 text-amber-800 px-2 py-0.5 rounded-full border border-amber-200">
-              {transactions.filter(t => t.status === 'Approved').length} Actionable
-            </span>
-          </div>
-          <div className="divide-y max-h-72 overflow-y-auto">
-            {transactions.filter(t => t.status === 'Approved').length === 0 ? (
-              <div className="p-8 text-center text-slate-400 text-xs">
-                <i className="fa-regular fa-circle-check text-2xl text-slate-300 block mb-2"></i>
-                All approved transactions have been disbursed. No pending queue entries.
-              </div>
-            ) : (
-              transactions.filter(t => t.status === 'Approved').map(t => (
-                <div key={t.id} className="p-3 hover:bg-slate-50 transition flex justify-between items-center">
-                  <div>
-                    <div className="font-bold text-xs text-slate-900">{t.employeeName}</div>
-                    <div className="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
-                      <span>{t.companyName}</span>
-                      <span>•</span>
-                      <span className="font-mono text-blue-600">{t.id}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="font-mono font-bold text-xs text-slate-950">${t.amount.toFixed(2)}</div>
-                      <div className="text-[9px] text-slate-400">Fee: ${t.feeAmount.toFixed(2)}</div>
-                    </div>
-                    <button 
-                      onClick={() => disburseTransaction(t.id, 'Alex Chen')}
-                      className="px-2.5 py-1.5 bg-blue-600 text-white font-bold rounded-md text-[10px] hover:bg-blue-700 transition"
-                    >
-                      <i className="fa-solid fa-paper-plane mr-1"></i>
-                      Disburse
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Integration Status / Platform Pulse */}
-        <div className="bg-white border rounded-lg shadow-sm p-4 flex flex-col justify-between">
-          <div>
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Enterprise Integration Status</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center text-xs border-b pb-2">
-                <span className="text-slate-500 font-medium">Oracle Fusion ERP Ledger Sync</span>
-                <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-mono font-bold text-[10px]">
-                  <i className="fa-solid fa-link mr-1"></i>CONNECTED
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-xs border-b pb-2">
-                <span className="text-slate-500 font-medium">ADP Workforce Now API Feed</span>
-                <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-mono font-bold text-[10px]">
-                  <i className="fa-solid fa-rotate mr-1"></i>10m SYNCED
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-xs border-b pb-2">
-                <span className="text-slate-500 font-medium">Chase Bank FedNow Real-Time Channel</span>
-                <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-mono font-bold text-[10px]">
-                  <i className="fa-solid fa-wifi mr-1"></i>OPERATIONAL
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-500 font-medium">Secured Vault Custodial Vault Encryption</span>
-                <span className="text-slate-700 bg-slate-100 px-2 py-0.5 rounded font-mono font-bold text-[10px]">
-                  <i className="fa-solid fa-shield-halved mr-1"></i>AES-256 GCM
-                </span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-slate-900 text-slate-200 rounded-lg p-3 text-xs font-mono mt-4">
-            <div className="text-slate-500 border-b border-slate-800 pb-1 mb-1">Double-Entry Posting Protocol</div>
-            <div className="flex justify-between text-slate-300">
-              <span>Debit: 1400 Employee Receivable</span>
-              <span className="text-cyan-400">+ $Value</span>
-            </div>
-            <div className="flex justify-between text-slate-300">
-              <span>Credit: 1200 Prefund Bank Account</span>
-              <span className="text-rose-400">- $Net</span>
-            </div>
-            <div className="flex justify-between text-slate-300">
-              <span>Credit: 4100 Processing Fee Revenue</span>
-              <span className="text-emerald-400">- $Fee</span>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

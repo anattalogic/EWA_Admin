@@ -17,70 +17,90 @@ export function ConfigModule() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="flex flex-col h-full bg-sap-background">
+      
+      {/* Header */}
+      <div className="bg-white border-b border-sap-border px-6 py-4 flex justify-between items-center shrink-0">
         <div>
-          <nav className="flex gap-2 text-[11px] text-slate-400 uppercase tracking-wider mb-1 font-bold">
+          <div className="flex items-center gap-2 text-[10px] text-sap-text-secondary uppercase tracking-widest font-bold mb-1">
             <span>Administration</span>
-            <span>/</span>
-            <span className="text-blue-600">Console Settings</span>
-          </nav>
-          <h1 className="text-2xl font-bold font-display text-slate-900 leading-tight">System Configuration & Audits</h1>
+            <i className="fa-solid fa-chevron-right text-[8px]"></i>
+            <span className="text-sap-primary">Console Settings</span>
+          </div>
+          <h1 className="text-xl font-semibold text-sap-text tracking-tight">Configuration & Audit</h1>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Settings options */}
-        <div className="bg-white border rounded-lg shadow-sm p-5 lg:col-span-1 space-y-4">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 border-b pb-2 mb-4">Core Platform Limits</h3>
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
           
-          <div className="space-y-4">
-            {configs.map(c => (
-              <div key={c.id} className="space-y-1.5">
-                <div className="flex justify-between items-baseline">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">{c.key}</label>
-                  <span className="text-[9px] font-semibold text-slate-400 font-mono">{c.category}</span>
+          {/* Settings options */}
+          <div className="sap-card p-6 lg:col-span-1 space-y-6 flex flex-col h-fit sticky top-6">
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-sap-text border-b pb-3 border-sap-border">Core Platform Parameters</h3>
+            
+            <div className="space-y-6">
+              {configs.map(c => (
+                <div key={c.id} className="space-y-2 group">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[10px] font-bold text-sap-text uppercase tracking-widest">{c.key}</label>
+                    <span className="text-[9px] font-bold text-sap-primary bg-blue-50 px-1.5 py-0.5 rounded-sm border border-blue-100 uppercase tracking-tighter">{c.category}</span>
+                  </div>
+                  <input 
+                    type="text" 
+                    value={c.value} 
+                    onChange={e => handleUpdateConfig(c.id, e.target.value)}
+                    className="w-full text-[11px] font-mono font-bold p-2.5 bg-slate-50 border border-sap-border rounded-sm focus:ring-1 focus:ring-sap-primary focus:bg-white focus:outline-none transition-all"
+                  />
+                  <p className="text-[10px] text-sap-text-secondary font-bold uppercase tracking-tighter italic opacity-70 group-hover:opacity-100 transition-opacity">{c.description}</p>
                 </div>
-                <input 
-                  type="text" 
-                  value={c.value} 
-                  onChange={e => handleUpdateConfig(c.id, e.target.value)}
-                  className="w-full text-xs font-mono font-bold p-2 bg-slate-50 border rounded-md focus:ring-1 focus:ring-blue-600 focus:outline-none"
-                />
-                <p className="text-[10px] text-slate-400">{c.description}</p>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            <div className="pt-6 border-t border-sap-border">
+              <button className="w-full py-2.5 bg-sap-shell text-white rounded-sm text-[10px] font-bold uppercase tracking-widest hover:bg-sap-shell/90 transition shadow-sm">
+                Commit Protocol Changes
+              </button>
+            </div>
           </div>
+
+          {/* Audit Log timeline right */}
+          <div className="sap-card lg:col-span-2 overflow-hidden flex flex-col bg-white">
+            <div className="p-4 border-b bg-slate-50 flex justify-between items-center">
+              <h3 className="text-[11px] font-bold uppercase tracking-tight text-sap-text">Platform Audit Protocol Ledger</h3>
+              <span className="text-[10px] bg-blue-50 text-sap-primary border border-blue-200 font-bold px-2 py-0.5 rounded-sm">
+                IMMUTABLE LOGS
+              </span>
+            </div>
+
+            <div className="divide-y divide-sap-border overflow-y-auto flex-1">
+              {auditLogs.map(log => (
+                <div key={log.id} className="p-5 hover:bg-blue-50/20 transition group space-y-2">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-sap-primary"></span>
+                      <span className="text-[10px] font-bold text-sap-primary uppercase tracking-widest">{log.module}</span>
+                    </div>
+                    <span className="text-[9px] font-bold text-sap-text-secondary uppercase tracking-widest font-mono">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                  </div>
+                  <div className="font-bold text-[12px] text-sap-text uppercase tracking-tight group-hover:text-sap-primary transition-colors">{log.action}</div>
+                  <p className="text-sap-text-secondary font-bold uppercase tracking-tighter text-[10px] leading-relaxed italic">{log.details}</p>
+                  <div className="flex justify-between text-[9px] text-sap-text-secondary font-bold uppercase tracking-widest pt-2 border-t border-sap-border/10">
+                    <span className="flex items-center gap-1.5">
+                      <i className="fa-solid fa-user text-[8px] opacity-50"></i>
+                      Auth: {log.user}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <i className="fa-solid fa-network-wired text-[8px] opacity-50"></i>
+                      IP: {log.ipAddress}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
-
-        {/* Audit Log timeline right */}
-        <div className="bg-white border rounded-lg shadow-sm lg:col-span-2 overflow-hidden flex flex-col">
-          <div className="p-4 border-b bg-slate-50 flex justify-between items-center">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">Fintech System Audit Log Trail</h3>
-            <span className="text-[10px] bg-blue-50 text-blue-700 font-mono font-bold px-2 py-0.5 rounded">
-              Immutable Ledger Logs
-            </span>
-          </div>
-
-          <div className="divide-y overflow-y-auto max-h-[480px]">
-            {auditLogs.map(log => (
-              <div key={log.id} className="p-4 hover:bg-slate-50/50 transition space-y-1 text-xs">
-                <div className="flex justify-between items-center text-[10px] font-mono">
-                  <span className="font-bold text-blue-600">{log.module}</span>
-                  <span className="text-slate-400">{new Date(log.timestamp).toLocaleTimeString()}</span>
-                </div>
-                <div className="font-bold text-slate-800">{log.action}</div>
-                <p className="text-slate-500 leading-relaxed text-[11px]">{log.details}</p>
-                <div className="flex justify-between text-[9px] text-slate-400 pt-1">
-                  <span>Authorized User: {log.user}</span>
-                  <span>Terminal IP: {log.ipAddress}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
       </div>
     </div>
   );

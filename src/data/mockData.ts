@@ -10,8 +10,47 @@ import {
   Workflow, 
   AuditLog, 
   ActivityLog,
-  SystemConfiguration
+  SystemConfiguration,
+  ServiceDefinition,
+  Invoice,
+  WorkflowTask
 } from '../types';
+
+export const INITIAL_SERVICES: ServiceDefinition[] = [
+  { 
+    id: 'SVC-01', 
+    name: 'Employment Verification', 
+    code: 'EMP_VERIFY', 
+    type: 'Non-Transactional', 
+    description: 'Automated verification of employment status via HRIS integration.',
+    requiresFee: true 
+  },
+  { 
+    id: 'SVC-02', 
+    name: 'Company Onboarding', 
+    code: 'COMP_ONBOARD', 
+    type: 'Non-Transactional', 
+    description: 'Initial enterprise setup, KYC, and system integration protocol.',
+    requiresFee: true 
+  },
+  { 
+    id: 'SVC-03', 
+    name: 'EWA Disbursement', 
+    code: 'EWA_DISBURSE', 
+    type: 'Transactional', 
+    description: 'Real-time or standard clearing of earned wage advances.',
+    glPostingRule: { debitAccountId: '1400', creditAccountId: '1200' },
+    requiresFee: true 
+  },
+  { 
+    id: 'SVC-04', 
+    name: 'Employee Registration', 
+    code: 'EMP_REG', 
+    type: 'Non-Transactional', 
+    description: 'Digital identity creation and banking payload verification.',
+    requiresFee: false 
+  }
+];
 
 export const INITIAL_COMPANIES: Company[] = [
   {
@@ -19,13 +58,30 @@ export const INITIAL_COMPANIES: Company[] = [
     name: 'Amazon Logistics North',
     code: 'AMZN-LN',
     industry: 'Logistics',
+    category: 'Enterprise',
+    region: 'Yangon',
     status: 'Active',
     creditLimit: 500000,
     availableLimit: 485000,
     budgetUtilized: 24500,
     prefundBalance: 120000,
     feePolicyId: 'FP-001',
-    bankAccount: 'US-OPER-9821',
+    payrollPolicy: {
+      id: 'PP-001',
+      cycle: 'Monthly',
+      startDay: 1,
+      endDay: 30,
+      payDay: 5,
+      ewaWindowStart: 1,
+      ewaWindowEnd: 25,
+      repaymentDay: 5,
+      lateGraceDays: 3
+    },
+    limits: [
+      { id: 'L-01', scope: 'Company', frequency: 'Monthly', type: 'Amount', min: 0, max: 100000, effectiveFrom: '2024-01-01' },
+      { id: 'L-02', scope: 'Employee', frequency: 'PerTransaction', type: 'Amount', min: 10, max: 1000, effectiveFrom: '2024-01-01' }
+    ],
+    bankAccount: 'KBZ-OPER-9821',
     contactEmail: 'logistics-ops@amazon-north.com',
     createdDate: '2024-01-15'
   },
@@ -34,45 +90,46 @@ export const INITIAL_COMPANIES: Company[] = [
     name: 'Global Tech Solutions',
     code: 'GBL-TECH',
     industry: 'Technology',
+    category: 'Strategic',
+    region: 'Mandalay',
     status: 'Active',
     creditLimit: 1000000,
     availableLimit: 950000,
     budgetUtilized: 48900,
     prefundBalance: 250000,
     feePolicyId: 'FP-002',
-    bankAccount: 'US-OPER-5541',
+    payrollPolicy: {
+      id: 'PP-002',
+      cycle: 'Monthly',
+      startDay: 15,
+      endDay: 14,
+      payDay: 20,
+      ewaWindowStart: 15,
+      ewaWindowEnd: 10,
+      repaymentDay: 20,
+      lateGraceDays: 2
+    },
+    bankAccount: 'YOMA-OPER-5541',
     contactEmail: 'payroll-ops@globaltech.io',
     createdDate: '2023-06-10'
-  },
+  }
+];
+
+export const INITIAL_TASKS: WorkflowTask[] = [
   {
-    id: 'C-003',
-    name: 'Apex Healthcare Services',
-    code: 'APX-MED',
-    industry: 'Healthcare',
-    status: 'Active',
-    creditLimit: 750000,
-    availableLimit: 720000,
-    budgetUtilized: 12000,
-    prefundBalance: 850000,
-    feePolicyId: 'FP-001',
-    bankAccount: 'US-OPER-1122',
-    contactEmail: 'finance@apex-med.org',
-    createdDate: '2023-11-20'
-  },
-  {
-    id: 'C-004',
-    name: 'Horizon Retail Corp',
-    code: 'HRZ-RET',
-    industry: 'Retail',
+    id: 'TSK-1001',
+    type: 'BUDGET_REQUEST',
     status: 'Pending',
-    creditLimit: 250000,
-    availableLimit: 250000,
-    budgetUtilized: 0,
-    prefundBalance: 0,
-    feePolicyId: 'FP-003',
-    bankAccount: 'US-OPER-8844',
-    contactEmail: 'onboarding@horizonretail.com',
-    createdDate: '2026-06-01'
+    creator: 'Sarah Jenkins',
+    assignedTo: 'Finance Team',
+    createdAt: '2026-07-09T10:00:00Z',
+    updatedAt: '2026-07-09T14:30:00Z',
+    priority: 'High',
+    payload: { amount: 50000, companyId: 'C-001', reason: 'High demand for July festival season' },
+    history: [
+      { id: 'ACT-1', action: 'Created', user: 'Sarah Jenkins', timestamp: '2026-07-09T10:00:00Z', comment: 'Requesting increase for seasonal peak', fromState: 'None', toState: 'Pending' },
+      { id: 'ACT-2', action: 'Assigned', user: 'System', timestamp: '2026-07-09T10:00:05Z', fromState: 'Pending', toState: 'Pending' }
+    ]
   }
 ];
 
@@ -84,13 +141,15 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     lastName: 'Jenkins',
     email: 'sarah.j@amazon-north.com',
     role: 'Warehouse Supervisor',
+    group: 'Staff',
+    riskCategory: 'Low',
     salary: 5800,
     hourlyRate: 28,
     tenureMonths: 14,
     ewaAvailable: 1250,
     usedAmount: 185,
     outstanding: 185,
-    bankName: 'Chase Bank',
+    bankName: 'KBZ Bank',
     bankAccount: '•••• 4920',
     kycStatus: 'Verified',
     accruedWages: 2100
@@ -102,88 +161,18 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     lastName: 'Rodriguez',
     email: 'm.rodriguez@globaltech.io',
     role: 'Senior QA Engineer',
+    group: 'Management',
+    riskCategory: 'Low',
     salary: 8200,
     hourlyRate: 48,
     tenureMonths: 8,
     ewaAvailable: 2450,
     usedAmount: 312.45,
     outstanding: 312.45,
-    bankName: 'Wells Fargo',
+    bankName: 'CB Bank',
     bankAccount: '•••• 1102',
     kycStatus: 'Verified',
     accruedWages: 3400
-  },
-  {
-    id: 'EMP-103',
-    companyId: 'C-001',
-    firstName: 'Emma',
-    lastName: 'Watson',
-    email: 'e.watson@amazon-north.com',
-    role: 'Delivery Associate',
-    salary: 3400,
-    hourlyRate: 18,
-    tenureMonths: 3,
-    ewaAvailable: 600,
-    usedAmount: 50,
-    outstanding: 50,
-    bankName: 'Bank of America',
-    bankAccount: '•••• 9921',
-    kycStatus: 'Verified',
-    accruedWages: 950
-  },
-  {
-    id: 'EMP-104',
-    companyId: 'C-003',
-    firstName: 'David',
-    lastName: 'Kim',
-    email: 'd.kim@apex-med.org',
-    role: 'Critical Care Nurse',
-    salary: 7600,
-    hourlyRate: 44,
-    tenureMonths: 24,
-    ewaAvailable: 2800,
-    usedAmount: 0,
-    outstanding: 0,
-    bankName: 'CitiBank',
-    bankAccount: '•••• 3381',
-    kycStatus: 'Verified',
-    accruedWages: 4200
-  },
-  {
-    id: 'EMP-105',
-    companyId: 'C-002',
-    firstName: 'Jessica',
-    lastName: 'Taylor',
-    email: 'j.taylor@globaltech.io',
-    role: 'Technical Support',
-    salary: 4900,
-    hourlyRate: 24,
-    tenureMonths: 5,
-    ewaAvailable: 980,
-    usedAmount: 150,
-    outstanding: 150,
-    bankName: 'Wells Fargo',
-    bankAccount: '•••• 4410',
-    kycStatus: 'Pending',
-    accruedWages: 1200
-  },
-  {
-    id: 'EMP-106',
-    companyId: 'C-004',
-    firstName: 'Carlos',
-    lastName: 'Mendoza',
-    email: 'carlos.m@horizonretail.com',
-    role: 'Store Associate',
-    salary: 2800,
-    hourlyRate: 15,
-    tenureMonths: 1,
-    ewaAvailable: 200,
-    usedAmount: 0,
-    outstanding: 0,
-    bankName: 'PNC Bank',
-    bankAccount: '•••• 0077',
-    kycStatus: 'Failed',
-    accruedWages: 300
   }
 ];
 
@@ -218,9 +207,41 @@ export const INITIAL_BUDGETS: Budget[] = [
 ];
 
 export const INITIAL_FEE_POLICIES: FeePolicy[] = [
-  { id: 'FP-001', name: 'Standard Flat Rate ($2.99)', type: 'Flat', value: 2.99, status: 'Active' },
-  { id: 'FP-002', name: 'Premium Tech Percentage (1.5%)', type: 'Percentage', value: 1.5, status: 'Active' },
-  { id: 'FP-003', name: 'Retail Dynamic Tiered Rate', type: 'Tiered', value: 3.50, status: 'Active' }
+  { 
+    id: 'FP-001', 
+    name: 'Enterprise Tiered Protocol', 
+    serviceId: 'SVC-03',
+    type: 'Tiered', 
+    value: 0,
+    hierarchyLevel: 1,
+    status: 'Active',
+    tiers: [
+      { id: 'T1', minAmount: 0, maxAmount: 100, flatFee: 1.99, percentFee: 0 },
+      { id: 'T2', minAmount: 100, maxAmount: 500, flatFee: 2.99, percentFee: 0 },
+      { id: 'T3', minAmount: 500, maxAmount: 10000, flatFee: 0, percentFee: 1.5 }
+    ]
+  },
+  { 
+    id: 'FP-002', 
+    name: 'Strategic Onboarding Fee', 
+    serviceId: 'SVC-02',
+    type: 'Flat', 
+    value: 500.00,
+    hierarchyLevel: 2,
+    status: 'Active'
+  },
+  {
+    id: 'FP-003',
+    name: 'Conditional Late Settlement',
+    type: 'Conditional',
+    value: 2.0,
+    hierarchyLevel: 1,
+    status: 'Active',
+    conditions: {
+      lateDays: 3,
+      employeeGroup: 'Contractor'
+    }
+  }
 ];
 
 export const INITIAL_TRANSACTIONS: Transaction[] = [
@@ -235,6 +256,7 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
     netDisbursed: 182.01,
     riskScore: 12,
     riskLevel: 'Low',
+    outstanding: 185.00,
     status: 'Pending',
     workflowStep: 'Treasury Verification',
     timestamp: '2026-07-10T09:14:00-07:00',
@@ -257,6 +279,7 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
     netDisbursed: 307.76,
     riskScore: 82,
     riskLevel: 'High',
+    outstanding: 312.45,
     status: 'Hold',
     workflowStep: 'Fraud Audit Hook',
     timestamp: '2026-07-10T08:35:00-07:00',
@@ -279,6 +302,7 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
     netDisbursed: 47.01,
     riskScore: 5,
     riskLevel: 'Low',
+    outstanding: 50.00,
     status: 'Approved',
     workflowStep: 'Auto-Posting Engine',
     timestamp: '2026-07-10T10:02:00-07:00',
@@ -301,6 +325,7 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
     netDisbursed: 447.01,
     riskScore: 8,
     riskLevel: 'Low',
+    outstanding: 450.00,
     status: 'Disbursed',
     workflowStep: 'Completed',
     timestamp: '2026-07-09T14:22:00-07:00',
@@ -323,6 +348,7 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
     netDisbursed: 147.75,
     riskScore: 48,
     riskLevel: 'Medium',
+    outstanding: 0,
     status: 'Rejected',
     workflowStep: 'KYC Failure Auto-Reject',
     timestamp: '2026-07-09T11:05:00-07:00',
@@ -348,9 +374,30 @@ export const INITIAL_GL_ACCOUNTS: GLAccount[] = [
 ];
 
 export const INITIAL_BANK_ACCOUNTS: BankAccount[] = [
-  { id: 'BA-01', name: 'Chase Operating Account', accountNumber: 'US-OPER-9821', type: 'Operating', balance: 1429042.88, currency: 'USD' },
-  { id: 'BA-02', name: 'SVB Prefund Vault', accountNumber: 'US-PREF-4411', type: 'Prefund', balance: 1220000.00, currency: 'USD' },
-  { id: 'BA-03', name: 'BNY Mellon EWA Clearing', accountNumber: 'US-COLL-5051', type: 'Collection', balance: 350000.00, currency: 'USD' }
+  { id: 'BA-01', name: 'KBZ Operating Account', accountNumber: 'KBZ-OPER-9821', type: 'Operating', balance: 1429042.88, currency: 'MMK' },
+  { id: 'BA-02', name: 'YOMA Prefund Vault', accountNumber: 'YOMA-PREF-4411', type: 'Prefund', balance: 1220000.00, currency: 'MMK' },
+  { id: 'BA-03', name: 'CB Clearing Account', accountNumber: 'CB-COLL-5051', type: 'Collection', balance: 350000.00, currency: 'MMK' },
+  { id: 'BA-04', name: 'MoMoney Digital Wallet', accountNumber: 'MO-WALT-1122', type: 'Collection', balance: 85000.00, currency: 'MMK' }
+];
+
+export const INITIAL_INVOICES: Invoice[] = [
+  {
+    id: 'INV-001',
+    companyId: 'C-001',
+    companyName: 'Amazon Logistics North',
+    billingPeriod: 'June 2026',
+    issueDate: '2026-07-01',
+    dueDate: '2026-07-15',
+    totalServiceFees: 1245.50,
+    totalDisbursements: 24500.00,
+    totalRepayments: 22000.00,
+    netPayable: 3745.50,
+    status: 'Sent',
+    lineItems: [
+      { id: 'LI-1', serviceName: 'EWA Disbursement Fees', count: 412, amount: 1231.88 },
+      { id: 'LI-2', serviceName: 'Employment Verification', count: 12, amount: 13.62 }
+    ]
+  }
 ];
 
 export const INITIAL_BANK_STATEMENTS: BankStatementLine[] = [

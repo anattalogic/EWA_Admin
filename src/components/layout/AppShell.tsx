@@ -19,9 +19,10 @@ import { ConfigModule } from "../configuration/ConfigModule";
 import { BudgetModule } from "../budget/BudgetModule";
 import { FeeModule } from "../fees/FeeModule";
 import { ReportsModule } from "../reports/ReportsModule";
+import { AdvancedConfigModule } from "../configuration/AdvancedConfigModule";
 
 export function AppShell() {
-  const { activeTab } = useEwaStore();
+  const { activeTab, isRightPanelOpen } = useEwaStore();
 
   const renderActiveModule = () => {
     switch (activeTab) {
@@ -45,12 +46,14 @@ export function AppShell() {
         return <LedgerModule />;
       case 'Banking & Reconcile':
         return <BankingModule />;
-      case 'Reports Center':
+      case 'Reporting Hub':
         return <ReportsModule />;
       case 'Workflow Builder':
         return <WorkflowModule />;
       case 'Rules Compliance':
         return <RulesModule />;
+      case 'Advanced Config':
+        return <AdvancedConfigModule />;
       case 'System Config':
         return <ConfigModule />;
       default:
@@ -88,7 +91,7 @@ export function AppShell() {
       </div>
 
       {/* Right Intelligence & Auditing Panel */}
-      <RightPanel />
+      {isRightPanelOpen && <RightPanel />}
 
     </div>
   );

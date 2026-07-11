@@ -19,10 +19,11 @@ export function Sidebar() {
     
     { name: 'General Ledger', icon: 'fa-scale-balanced', category: 'Operations' },
     { name: 'Banking & Reconcile', icon: 'fa-building-columns', category: 'Operations' },
-    { name: 'Reports Center', icon: 'fa-file-contract', category: 'Operations' },
+    { name: 'Reporting Hub', icon: 'fa-file-contract', category: 'Operations' },
     { name: 'Workflow Builder', icon: 'fa-diagram-project', category: 'Operations' },
     
     { name: 'Rules Compliance', icon: 'fa-sliders', category: 'Automation' },
+    { name: 'Advanced Config', icon: 'fa-microchip', category: 'Automation' },
     { name: 'System Config', icon: 'fa-gears', category: 'Automation' },
   ];
 

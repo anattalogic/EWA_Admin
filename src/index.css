@@ -3,7 +3,20 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --font-display: "Space Grotesk", sans-serif;
+  --font-display: "Inter", sans-serif;
+  
+  /* SAP Horizon Color Palette */
+  --color-sap-primary: #0070f2;
+  --color-sap-shell: #354a5f;
+  --color-sap-background: #edeff0;
+  --color-sap-surface: #ffffff;
+  --color-sap-border: #d9d9d9;
+  --color-sap-text: #32363a;
+  --color-sap-text-secondary: #6a6d70;
+  --color-sap-success: #107e3e;
+  --color-sap-error: #bb0000;
+  --color-sap-warning: #e9730c;
+  --color-sap-info: #0a6ed1;
 }
 
 /* Custom premium styles */
@@ -11,6 +24,29 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
+  background-color: var(--color-sap-background);
+  color: var(--color-sap-text);
+  font-family: var(--font-sans);
+}
+
+/* SAP-style list/table zebra stripes */
+.sap-table-row:nth-child(even) {
+  background-color: #f7f7f7;
+}
+
+/* Glassmorphism/SAP Tile Effect */
+.sap-card {
+  background: white;
+  border: 1px solid var(--color-sap-border);
+  border-radius: 0.25rem;
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.05);
+}
+
+.sap-shell-button {
+  transition: all 0.2s ease;
+}
+.sap-shell-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 ::-webkit-scrollbar {
@@ -23,12 +59,12 @@ html, body, #root {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #ccc;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #bbb;
 }
 
 /* Animations and transitions */

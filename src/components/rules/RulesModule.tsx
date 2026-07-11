@@ -34,143 +34,157 @@ export function RulesModule() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="flex flex-col h-full bg-sap-background">
+      
+      {/* Header */}
+      <div className="bg-white border-b border-sap-border px-6 py-4 flex justify-between items-center shrink-0">
         <div>
-          <nav className="flex gap-2 text-[11px] text-slate-400 uppercase tracking-wider mb-1 font-bold">
+          <div className="flex items-center gap-2 text-[10px] text-sap-text-secondary uppercase tracking-widest font-bold mb-1">
             <span>Automation</span>
-            <span>/</span>
-            <span className="text-blue-600">Compliance rules</span>
-          </nav>
-          <h1 className="text-2xl font-bold font-display text-slate-900 leading-tight">Visual Rules Engine</h1>
+            <i className="fa-solid fa-chevron-right text-[8px]"></i>
+            <span className="text-sap-primary">Business Logic</span>
+          </div>
+          <h1 className="text-xl font-semibold text-sap-text tracking-tight">Rules Engine</h1>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Rules Builder form panel left */}
-        <div className="bg-white p-5 border rounded-lg shadow-sm lg:col-span-2 space-y-6">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">Dynamic Policy Parameters</h3>
-          <p className="text-[11px] text-slate-400">Configure parameters for automatic instant clearing. EWA requests failing these gates are routed to treasury admin queue.</p>
-
-          <div className="space-y-4">
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Rules Builder */}
+          <div className="sap-card p-6 lg:col-span-2 space-y-6">
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-sap-text border-b pb-3 border-sap-border">Dynamic Policy Definitions</h3>
             
-            {/* Rule 1: Tenure gate */}
-            <div className="p-4 bg-slate-50 border rounded-lg space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-xs text-slate-800">Rule 1: Minimum Employee Tenure Gate</span>
-                <span className="text-[10px] bg-blue-50 text-blue-700 font-mono font-bold px-2 py-0.5 rounded">AUTO_TENURE</span>
-              </div>
-              <div className="flex gap-4 items-center">
-                <span className="text-xs text-slate-500 font-semibold shrink-0">IF Employee Tenure Months is greater than</span>
-                <input 
-                  type="number" 
-                  value={tenureRule} 
-                  onChange={e => setTenureRule(Number(e.target.value))}
-                  className="w-16 text-xs font-bold font-mono p-1 border rounded text-center" 
-                />
-                <span className="text-xs text-slate-500">Months</span>
-              </div>
-            </div>
-
-            {/* Rule 2: Drawdown Gate */}
-            <div className="p-4 bg-slate-50 border rounded-lg space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-xs text-slate-800">Rule 2: Accrued Wages Drawdown Threshold</span>
-                <span className="text-[10px] bg-blue-50 text-blue-700 font-mono font-bold px-2 py-0.5 rounded">LIMIT_WAGE</span>
-              </div>
-              <div className="flex gap-4 items-center">
-                <span className="text-xs text-slate-500 font-semibold shrink-0">IF Drawdown Request represents less than</span>
-                <input 
-                  type="number" 
-                  value={wagePercentage} 
-                  onChange={e => setWagePercentage(Number(e.target.value))}
-                  className="w-16 text-xs font-bold font-mono p-1 border rounded text-center" 
-                />
-                <span className="text-xs text-slate-500">% of accrued net earned wage balance</span>
-              </div>
-            </div>
-
-            {/* Rule 3: Risk matrix limit */}
-            <div className="p-4 bg-slate-50 border rounded-lg space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-xs text-slate-800">Rule 3: Algorithmic Fraud Score Threshold</span>
-                <span className="text-[10px] bg-blue-50 text-blue-700 font-mono font-bold px-2 py-0.5 rounded">RISK_LIMIT</span>
-              </div>
-              <div className="flex gap-4 items-center">
-                <span className="text-xs text-slate-500 font-semibold shrink-0">IF Automated Risk Score is below</span>
-                <input 
-                  type="number" 
-                  value={riskLimit} 
-                  onChange={e => setRiskLimit(Number(e.target.value))}
-                  className="w-16 text-xs font-bold font-mono p-1 border rounded text-center" 
-                />
-                <span className="text-xs text-slate-500">out of 100</span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        {/* Rule Testing Simulator right */}
-        <div className="bg-white border rounded-lg shadow-sm p-4 space-y-4 flex flex-col justify-between">
-          <div className="space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">Dynamic Rule Simulator</h3>
-            <p className="text-[11px] text-slate-400">Run sandbox simulations using real employee profiles against the above active parameters.</p>
-
-            <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Select Employee</label>
-              <select
-                value={selectedEmpId}
-                onChange={e => setSelectedEmpId(e.target.value)}
-                className="w-full text-xs p-2.5 bg-slate-50 border rounded-md"
-              >
-                {employees.map(emp => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.firstName} {emp.lastName} (Tenure: {emp.tenureMonths}m | Earned: ${emp.accruedWages})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Simulated Amount ($)</label>
-              <input
-                type="number"
-                value={testAmount}
-                onChange={e => setTestAmount(Number(e.target.value))}
-                className="w-full text-xs p-2 border rounded-md font-mono"
-              />
-            </div>
-
-            <button
-              onClick={handleRunSimulation}
-              className="w-full py-2 bg-slate-900 text-white font-bold rounded-md text-xs transition"
-            >
-              Execute Sandbox Simulation
-            </button>
-          </div>
-
-          {/* Test results indicator */}
-          <div className="pt-4 border-t border-slate-100">
-            {simResult ? (
-              <div className={`p-4 rounded-lg text-xs border ${
-                simResult.passed ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900'
-              }`}>
-                <div className="font-bold flex items-center gap-1.5 uppercase mb-1">
-                  <i className={`fa-solid ${simResult.passed ? 'fa-circle-check text-emerald-600' : 'fa-triangle-exclamation text-rose-600'}`}></i>
-                  {simResult.passed ? 'Compliance Passed (PASS)' : 'Compliance Denied (FAIL)'}
+            <div className="space-y-4">
+              
+              {/* Rule 1: Tenure gate */}
+              <div className="p-5 bg-slate-50 border border-sap-border rounded-sm space-y-4 group hover:border-sap-primary transition">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-[11px] text-sap-text uppercase tracking-tight">Rule 1: Personnel Tenure Gate</span>
+                  <span className="text-[9px] bg-blue-50 text-sap-primary font-mono font-bold px-2 py-0.5 border border-blue-100 rounded-sm">AUTO_TENURE</span>
                 </div>
-                <p className="text-[11px] mt-1 leading-relaxed">{simResult.message}</p>
+                <div className="flex gap-4 items-center flex-wrap">
+                  <span className="text-[11px] text-sap-text-secondary font-bold uppercase tracking-tighter">IF Tenure Duration (Months) is greater than or equal to</span>
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="number" 
+                      value={tenureRule} 
+                      onChange={e => setTenureRule(Number(e.target.value))}
+                      className="w-16 text-xs font-bold font-mono p-2 border border-sap-border rounded-sm text-center bg-white focus:ring-1 focus:ring-sap-primary outline-none" 
+                    />
+                    <span className="text-[11px] text-sap-text-secondary font-bold uppercase tracking-tighter">Months</span>
+                  </div>
+                </div>
               </div>
-            ) : (
-              <div className="p-8 text-center text-slate-400 text-xs">
-                Run sandbox above to compile rule results.
-              </div>
-            )}
-          </div>
-        </div>
 
+              {/* Rule 2: Drawdown Gate */}
+              <div className="p-5 bg-slate-50 border border-sap-border rounded-sm space-y-4 group hover:border-sap-primary transition">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-[11px] text-sap-text uppercase tracking-tight">Rule 2: Accrual Yield Threshold</span>
+                  <span className="text-[9px] bg-blue-50 text-sap-primary font-mono font-bold px-2 py-0.5 border border-blue-100 rounded-sm">LIMIT_ACCRUAL</span>
+                </div>
+                <div className="flex gap-4 items-center flex-wrap">
+                  <span className="text-[11px] text-sap-text-secondary font-bold uppercase tracking-tighter">IF Advance Request represents less than or equal to</span>
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="number" 
+                      value={wagePercentage} 
+                      onChange={e => setWagePercentage(Number(e.target.value))}
+                      className="w-16 text-xs font-bold font-mono p-2 border border-sap-border rounded-sm text-center bg-white focus:ring-1 focus:ring-sap-primary outline-none" 
+                    />
+                    <span className="text-[11px] text-sap-text-secondary font-bold uppercase tracking-tighter">% of Net Earned Wage</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rule 3: Risk matrix limit */}
+              <div className="p-5 bg-slate-50 border border-sap-border rounded-sm space-y-4 group hover:border-sap-primary transition">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-[11px] text-sap-text uppercase tracking-tight">Rule 3: Algorithmic Scoping Threshold</span>
+                  <span className="text-[9px] bg-blue-50 text-sap-primary font-mono font-bold px-2 py-0.5 border border-blue-100 rounded-sm">RISK_PROTOCOL</span>
+                </div>
+                <div className="flex gap-4 items-center flex-wrap">
+                  <span className="text-[11px] text-sap-text-secondary font-bold uppercase tracking-tighter">IF Automated Audit Score is below</span>
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="number" 
+                      value={riskLimit} 
+                      onChange={e => setRiskLimit(Number(e.target.value))}
+                      className="w-16 text-xs font-bold font-mono p-2 border border-sap-border rounded-sm text-center bg-white focus:ring-1 focus:ring-sap-primary outline-none" 
+                    />
+                    <span className="text-[11px] text-sap-text-secondary font-bold uppercase tracking-tighter">Units (0-100)</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Rule Testing Simulator */}
+          <div className="sap-card p-6 flex flex-col justify-between h-fit sticky top-6 bg-white border-l-4 border-l-sap-primary">
+            <div className="space-y-6">
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-sap-text border-b pb-3 border-sap-border">Audit Simulator</h3>
+              <p className="text-[10px] text-sap-text-secondary font-bold uppercase tracking-tighter italic">Execute policy validation against production-mirrored personnel data.</p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-sap-text-secondary uppercase tracking-widest mb-1.5">Personnel Object</label>
+                  <select
+                    value={selectedEmpId}
+                    onChange={e => setSelectedEmpId(e.target.value)}
+                    className="w-full text-[11px] p-2.5 bg-slate-50 border border-sap-border rounded-sm font-bold text-sap-text outline-none focus:ring-1 focus:ring-sap-primary"
+                  >
+                    {employees.map(emp => (
+                      <option key={emp.id} value={emp.id}>
+                        {emp.firstName} {emp.lastName} (Tenure: {emp.tenureMonths}m)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-sap-text-secondary uppercase tracking-widest mb-1.5">Test Principal ($)</label>
+                  <input
+                    type="number"
+                    value={testAmount}
+                    onChange={e => setTestAmount(Number(e.target.value))}
+                    className="w-full text-[11px] p-2.5 border border-sap-border rounded-sm font-mono font-bold text-sap-text outline-none focus:ring-1 focus:ring-sap-primary"
+                  />
+                </div>
+
+                <button
+                  onClick={handleRunSimulation}
+                  className="w-full py-2.5 bg-sap-shell text-white font-bold rounded-sm text-[11px] uppercase tracking-widest transition shadow-sm hover:bg-sap-shell/90"
+                >
+                  <i className="fa-solid fa-microchip mr-2"></i>
+                  Execute Protocol
+                </button>
+              </div>
+            </div>
+
+            {/* Test results */}
+            <div className="mt-6 pt-6 border-t border-sap-border min-h-[120px]">
+              {simResult ? (
+                <div className={`p-4 rounded-sm border animate-in fade-in zoom-in-95 duration-200 ${
+                  simResult.passed ? 'bg-emerald-50 border-emerald-200 text-sap-success' : 'bg-red-50 border-red-200 text-red-700'
+                }`}>
+                  <div className="font-bold flex items-center gap-2 uppercase tracking-widest text-[10px] mb-2">
+                    <i className={`fa-solid ${simResult.passed ? 'fa-circle-check' : 'fa-triangle-exclamation'}`}></i>
+                    {simResult.passed ? 'Protocol Passed' : 'Compliance Denied'}
+                  </div>
+                  <p className="text-[11px] font-bold tracking-tight leading-relaxed">{simResult.message}</p>
+                </div>
+              ) : (
+                <div className="p-8 text-center text-sap-text-secondary italic">
+                  <i className="fa-solid fa-vial-circle-check text-4xl text-slate-100 block mb-3"></i>
+                  <p className="text-[10px] font-bold uppercase tracking-widest">Awaiting Simulation</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );

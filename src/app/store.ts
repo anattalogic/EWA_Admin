@@ -13,7 +13,11 @@ import {
   ActivityLog,
   SystemConfiguration,
   JournalEntry,
-  JournalDetail
+  JournalDetail,
+  ServiceDefinition,
+  Invoice,
+  WorkflowTask,
+  TaskAction
 } from '../types';
 import {
   INITIAL_COMPANIES,
@@ -27,7 +31,10 @@ import {
   INITIAL_WORKFLOWS,
   INITIAL_AUDIT_LOGS,
   INITIAL_ACTIVITY_LOGS,
-  SYSTEM_CONFIGS
+  SYSTEM_CONFIGS,
+  INITIAL_SERVICES,
+  INITIAL_INVOICES,
+  INITIAL_TASKS
 } from '../data/mockData';
 
 interface EwaStore {
@@ -35,6 +42,9 @@ interface EwaStore {
   employees: Employee[];
   budgets: Budget[];
   feePolicies: FeePolicy[];
+  services: ServiceDefinition[];
+  invoices: Invoice[];
+  tasks: WorkflowTask[];
   transactions: Transaction[];
   glAccounts: GLAccount[];
   bankAccounts: BankAccount[];
@@ -47,9 +57,13 @@ interface EwaStore {
   
   // Navigation active tab
   activeTab: string;
+  activeSubTabs: Record<string, string>;
+  isRightPanelOpen: boolean;
   
   // Actions
   setActiveTab: (tab: string) => void;
+  setActiveSubTab: (tab: string, subTab: string) => void;
+  toggleRightPanel: () => void;
   
   // Business logic simulation actions
   addCompany: (company: Omit<Company, 'id' | 'createdDate'>) => void;
@@ -64,6 +78,7 @@ interface EwaStore {
   updateWorkflow: (nodes: any[], edges: any[]) => void;
   addAuditLog: (user: string, action: string, module: string, details: string) => void;
   addActivity: (title: string, description: string, type: 'info' | 'success' | 'warning' | 'error') => void;
+  updateTask: (id: string, updates: Partial<WorkflowTask>, action: string, user: string, comment?: string) => void;
 }
 
 export const useEwaStore = create<EwaStore>((set, get) => ({
@@ -71,6 +86,9 @@ export const useEwaStore = create<EwaStore>((set, get) => ({
   employees: INITIAL_EMPLOYEES,
   budgets: INITIAL_BUDGETS,
   feePolicies: INITIAL_FEE_POLICIES,
+  services: INITIAL_SERVICES,
+  invoices: INITIAL_INVOICES,
+  tasks: INITIAL_TASKS,
   transactions: INITIAL_TRANSACTIONS,
   glAccounts: INITIAL_GL_ACCOUNTS,
   bankAccounts: INITIAL_BANK_ACCOUNTS,
@@ -95,8 +113,14 @@ export const useEwaStore = create<EwaStore>((set, get) => ({
   ],
   
   activeTab: 'Dashboard',
+  activeSubTabs: {},
+  isRightPanelOpen: true,
   
   setActiveTab: (tab) => set({ activeTab: tab }),
+  setActiveSubTab: (tab, subTab) => set((state) => ({ 
+    activeSubTabs: { ...state.activeSubTabs, [tab]: subTab } 
+  })),
+  toggleRightPanel: () => set((state) => ({ isRightPanelOpen: !state.isRightPanelOpen })),
   
   addCompany: (company) => set((state) => {
     const newId = `C-0${state.companies.length + 1}`;
@@ -191,7 +215,22 @@ export const useEwaStore = create<EwaStore>((set, get) => ({
     if (!company) return {};
     
     const txnId = `TXN-${Math.floor(100000 + Math.random() * 900000)}`;
-    const feeAmount = parseFloat((amount * 0.015 + 1.99).toFixed(2));
+    
+    // Enhanced Fee Calculation with Tiers
+    const policy = state.feePolicies.find(p => p.id === company.feePolicyId) || state.feePolicies[0];
+    let feeAmount = 0;
+    
+    if (policy.type === 'Flat') {
+      feeAmount = policy.value;
+    } else if (policy.type === 'Percentage') {
+      feeAmount = parseFloat((amount * (policy.value / 100)).toFixed(2));
+    } else if (policy.type === 'Tiered' && policy.tiers) {
+      const tier = policy.tiers.find(t => amount >= t.minAmount && amount < t.maxAmount);
+      if (tier) {
+        feeAmount = tier.flatFee + parseFloat((amount * (tier.percentFee / 100)).toFixed(2));
+      }
+    }
+    
     const netDisbursed = parseFloat((amount - feeAmount).toFixed(2));
     
     // Run rule calculations
@@ -218,6 +257,7 @@ export const useEwaStore = create<EwaStore>((set, get) => ({
       netDisbursed,
       riskScore: riskRating,
       riskLevel: riskLvl,
+      outstanding: amount,
       status: autoApprove ? 'Approved' : riskLvl === 'High' ? 'Hold' : 'Pending',
       workflowStep: autoApprove ? 'Auto-Posting Engine' : riskLvl === 'High' ? 'Fraud Audit Hook' : 'Treasury Verification',
       timestamp: new Date().toISOString(),
@@ -623,5 +663,43 @@ export const useEwaStore = create<EwaStore>((set, get) => ({
       },
       ...state.activityLogs
     ]
-  }))
+  })),
+
+  updateTask: (id, updates, action, user, comment) => set((state) => {
+    const updatedTasks = state.tasks.map(task => {
+      if (task.id === id) {
+        const newAction: TaskAction = {
+          id: `ACT-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          action,
+          user,
+          comment,
+          fromState: task.status,
+          toState: updates.status || task.status
+        };
+        return {
+          ...task,
+          ...updates,
+          history: [...task.history, newAction]
+        };
+      }
+      return task;
+    });
+
+    return {
+      tasks: updatedTasks,
+      auditLogs: [
+        {
+          id: `AUD-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          user,
+          action: `Workflow Action: ${action}`,
+          module: 'Workflow Engine',
+          details: `Processed task ${id} with decision: ${action}.`,
+          ipAddress: '127.0.0.1'
+        },
+        ...state.auditLogs
+      ]
+    };
+  })
 }));

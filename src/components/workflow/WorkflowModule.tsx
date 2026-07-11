@@ -12,9 +12,9 @@ export function WorkflowModule() {
     const newNode = {
       id: newId,
       type,
-      name: `Custom ${type} Step`,
-      assignee: type === 'Approval' ? 'Treasury Auditor' : undefined,
-      description: `Auto-calibrated EWA ${type.toLowerCase()} threshold logic.`
+      name: `Custom ${type} Protocol`,
+      assignee: type === 'Approval' ? 'Treasury Lead' : undefined,
+      description: `Auto-configured EWA ${type.toLowerCase()} gate.`
     };
     const updatedNodes = [...nodes, newNode];
     setNodes(updatedNodes);
@@ -28,141 +28,140 @@ export function WorkflowModule() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="flex flex-col h-full bg-sap-background">
+      
+      {/* Header */}
+      <div className="bg-white border-b border-sap-border px-6 py-4 flex justify-between items-center shrink-0">
         <div>
-          <nav className="flex gap-2 text-[11px] text-slate-400 uppercase tracking-wider mb-1 font-bold">
+          <div className="flex items-center gap-2 text-[10px] text-sap-text-secondary uppercase tracking-widest font-bold mb-1">
             <span>Automation</span>
-            <span>/</span>
-            <span className="text-blue-600">Visual Workflows</span>
-          </nav>
-          <h1 className="text-2xl font-bold font-display text-slate-900 leading-tight">Approval Workflow Builder</h1>
+            <i className="fa-solid fa-chevron-right text-[8px]"></i>
+            <span className="text-sap-primary">Workflow Architect</span>
+          </div>
+          <h1 className="text-xl font-semibold text-sap-text tracking-tight">Approval Logic Builder</h1>
         </div>
         <div className="flex gap-2">
           <button 
-            onClick={() => alert('Workflow config compiled & pushed to staging: Version ' + activeWf.version)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md text-xs font-bold shadow-sm hover:bg-blue-700 transition"
+            onClick={() => alert('Workflow deployment initiated: ' + activeWf.version)}
+            className="px-4 py-1.5 bg-sap-primary text-white rounded-sm text-[11px] font-bold uppercase tracking-widest shadow-sm hover:bg-sap-primary/90 transition flex items-center gap-2"
           >
-            <i className="fa-solid fa-cloud-arrow-up mr-1.5"></i>
-            Deploy New Version
+            <i className="fa-solid fa-cloud-arrow-up"></i>
+            Deploy Logic
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        
-        {/* Node toolbox left */}
-        <div className="bg-white p-4 border rounded-lg shadow-sm space-y-4">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">Automation Toolbox</h3>
-          <p className="text-[11px] text-slate-400">Drag or click to inject automated decision gates and notification webhooks into the payroll routing logic.</p>
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
           
-          <div className="space-y-2">
-            <button 
-              onClick={() => handleAddNode('Approval')}
-              className="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 border rounded-md text-xs transition"
-            >
-              <span className="flex items-center gap-2 text-slate-700 font-semibold">
-                <i className="fa-solid fa-signature text-blue-600"></i>
-                Human Release approval
-              </span>
-              <span className="text-[10px] text-slate-400 font-mono">DR/CR</span>
-            </button>
-
-            <button 
-              onClick={() => handleAddNode('Decision')}
-              className="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 border rounded-md text-xs transition"
-            >
-              <span className="flex items-center gap-2 text-slate-700 font-semibold">
-                <i className="fa-solid fa-code-fork text-purple-600"></i>
-                Logical Gate Rule
-              </span>
-              <span className="text-[10px] text-slate-400 font-mono">IF/ELSE</span>
-            </button>
-
-            <button 
-              onClick={() => handleAddNode('Notification')}
-              className="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 border rounded-md text-xs transition"
-            >
-              <span className="flex items-center gap-2 text-slate-700 font-semibold">
-                <i className="fa-solid fa-paper-plane text-emerald-600"></i>
-                Gateway API Webhook
-              </span>
-              <span className="text-[10px] text-slate-400 font-mono">POST</span>
-            </button>
-
-            <button 
-              onClick={() => handleAddNode('Timer')}
-              className="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 border rounded-md text-xs transition"
-            >
-              <span className="flex items-center gap-2 text-slate-700 font-semibold">
-                <i className="fa-solid fa-hourglass-half text-amber-600"></i>
-                Liquidity Hold Delay
-              </span>
-              <span className="text-[10px] text-slate-400 font-mono">DELAY</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Visual Canvas central */}
-        <div className="bg-slate-50 border rounded-lg p-6 lg:col-span-3 flex flex-col justify-between min-h-[450px]">
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <span className="text-[10px] uppercase font-mono font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-200">
-                Active Graph: {activeWf.name} v{activeWf.version}
-              </span>
-              <span className="text-[10px] text-slate-400">Parity: Connected to Chase FedNow</span>
-            </div>
-
-            {/* Visual step cards */}
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              {nodes.map((node, idx) => (
-                <React.Fragment key={node.id}>
-                  {idx > 0 && (
-                    <div className="text-slate-300 font-bold text-lg animate-pulse">
-                      <i className="fa-solid fa-chevron-right"></i>
-                    </div>
-                  )}
-                  <div 
-                    onClick={() => setSelectedNodeId(node.id)}
-                    className={`p-4 bg-white border rounded-lg shadow-sm w-44 cursor-pointer hover:border-blue-500 transition relative group ${
-                      selectedNodeId === node.id ? 'border-2 border-blue-600' : 'border-slate-200'
-                    }`}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <span className={`text-[9px] font-bold uppercase px-1.5 py-0.2 rounded ${
-                        node.type === 'Start' ? 'bg-slate-100 text-slate-800' :
-                        node.type === 'Decision' ? 'bg-purple-100 text-purple-800' :
-                        node.type === 'Approval' ? 'bg-blue-100 text-blue-800' :
-                        node.type === 'Notification' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                      }`}>
-                        {node.type}
-                      </span>
-                      {node.type !== 'Start' && node.type !== 'End' && (
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveNode(node.id);
-                          }}
-                          className="opacity-0 group-hover:opacity-100 text-[10px] text-rose-600 hover:text-rose-800 transition"
-                        >
-                          <i className="fa-solid fa-trash-can"></i>
-                        </button>
-                      )}
-                    </div>
-                    <div className="text-xs font-bold text-slate-900 truncate">{node.name}</div>
-                    <div className="text-[10px] text-slate-400 mt-1 truncate">{node.description || node.assignee || 'System Step'}</div>
-                  </div>
-                </React.Fragment>
+          {/* Node toolbox */}
+          <div className="sap-card p-6 flex flex-col h-fit sticky top-6">
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-sap-text border-b pb-3 border-sap-border">Logic Toolbox</h3>
+            <p className="text-[10px] text-sap-text-secondary font-bold uppercase tracking-tighter italic mt-3 mb-6 leading-relaxed">
+              Define sequential decision gates and automated webhooks for protocol routing.
+            </p>
+            
+            <div className="space-y-3">
+              {[
+                { type: 'Approval', name: 'Human Audit', icon: 'fa-signature', color: 'text-blue-600', meta: 'DR/CR' },
+                { type: 'Decision', name: 'Logical Gate', icon: 'fa-code-fork', color: 'text-purple-600', meta: 'IF/ELSE' },
+                { type: 'Notification', name: 'API Webhook', icon: 'fa-paper-plane', color: 'text-emerald-600', meta: 'REST' },
+                { type: 'Timer', name: 'Protocol Hold', icon: 'fa-hourglass-half', color: 'text-amber-600', meta: 'WAIT' }
+              ].map(tool => (
+                <button 
+                  key={tool.type}
+                  onClick={() => handleAddNode(tool.type as any)}
+                  className="w-full flex items-center justify-between p-3 bg-white hover:bg-slate-50 border border-sap-border rounded-sm group transition"
+                >
+                  <span className="flex items-center gap-3 text-sap-text font-bold text-[11px] uppercase tracking-tighter">
+                    <i className={`fa-solid ${tool.icon} ${tool.color} group-hover:scale-110 transition`}></i>
+                    {tool.name}
+                  </span>
+                  <span className="text-[9px] text-sap-text-secondary font-bold uppercase tracking-widest font-mono opacity-50">{tool.meta}</span>
+                </button>
               ))}
             </div>
           </div>
 
-          <div className="bg-white border rounded p-3 text-xs flex justify-between items-center text-slate-600 mt-6">
-            <span><i className="fa-solid fa-circle-info text-blue-600 mr-1.5"></i> Click any node to select and edit parameter properties dynamically.</span>
-            <span className="font-mono font-bold text-slate-400">Nodes: {nodes.length}</span>
-          </div>
-        </div>
+          {/* Canvas central */}
+          <div className="lg:col-span-3 flex flex-col gap-6">
+            <div className="sap-card bg-slate-50/50 border-dashed border-2 flex-1 p-8 relative overflow-x-auto min-h-[500px]">
+              <div className="flex justify-between items-center mb-10">
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] uppercase font-mono font-bold bg-white text-sap-primary px-2 py-0.5 rounded-sm border border-sap-primary shadow-sm">
+                    ACTIVE: {activeWf.name} v{activeWf.version}
+                  </span>
+                  <div className="flex items-center gap-1.5 ml-4">
+                    <span className="w-1.5 h-1.5 rounded-full bg-sap-success animate-pulse"></span>
+                    <span className="text-[9px] text-sap-text-secondary font-bold uppercase tracking-widest">CONNECTED TO CORE GATEWAY</span>
+                  </div>
+                </div>
+              </div>
 
+              {/* Visual Graph */}
+              <div className="flex flex-wrap items-center justify-center gap-6">
+                {nodes.map((node, idx) => (
+                  <React.Fragment key={node.id}>
+                    {idx > 0 && (
+                      <div className="text-sap-border font-bold text-xl py-4">
+                        <i className="fa-solid fa-arrow-right-long text-sap-border animate-pulse"></i>
+                      </div>
+                    )}
+                    <div 
+                      onClick={() => setSelectedNodeId(node.id)}
+                      className={`p-4 bg-white border rounded-sm shadow-sm w-48 cursor-pointer hover:border-sap-primary transition-all relative group h-24 flex flex-col justify-between ${
+                        selectedNodeId === node.id ? 'border-2 border-sap-primary ring-4 ring-sap-primary/10 -translate-y-1' : 'border-sap-border'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-sm border ${
+                          node.type === 'Start' ? 'bg-slate-100 text-slate-800 border-slate-200' :
+                          node.type === 'Decision' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                          node.type === 'Approval' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                          node.type === 'Notification' ? 'bg-emerald-50 text-sap-success border-emerald-200' : 'bg-amber-50 text-sap-warning border-amber-200'
+                        }`}>
+                          {node.type}
+                        </span>
+                        {node.type !== 'Start' && node.type !== 'End' && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveNode(node.id);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 text-[10px] text-red-400 hover:text-red-600 transition"
+                          >
+                            <i className="fa-solid fa-trash-can"></i>
+                          </button>
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-[11px] font-bold text-sap-text truncate uppercase tracking-tight">{node.name}</div>
+                        <div className="text-[9px] text-sap-text-secondary mt-1 truncate font-bold uppercase tracking-tighter opacity-70">
+                          {node.description || node.assignee || 'SYSTEM STEP'}
+                        </div>
+                      </div>
+                    </div>
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+
+            <div className="sap-card p-4 flex justify-between items-center bg-white">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-sm bg-blue-50 flex items-center justify-center border border-blue-100">
+                  <i className="fa-solid fa-circle-info text-sap-primary text-[10px]"></i>
+                </div>
+                <span className="text-[10px] font-bold text-sap-text-secondary uppercase tracking-tighter">
+                  Select logic objects to calibrate dynamic protocol parameters.
+                </span>
+              </div>
+              <div className="font-mono font-bold text-[10px] text-sap-text uppercase bg-slate-50 border border-sap-border px-3 py-1 rounded-sm">
+                GRAPH_NODES: {nodes.length}
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );

@@ -1,135 +1,189 @@
 import React, { useState } from 'react';
 import { useEwaStore } from '../../app/store';
+import { ReusableTabs } from '../ui/ReusableTabs';
 
 export function ReportsModule() {
-  const { transactions, companies } = useEwaStore();
-  const [reportType, setReportType] = useState('Disbursement Summary');
+  const { companies, transactions, invoices, activeSubTabs, setActiveSubTab } = useEwaStore();
+  const activeSubTab = (activeSubTabs['Reporting Hub'] || 'Analytics') as 'Analytics' | 'Ledger Reports' | 'Invoices';
+
+  const [reportType, setReportType] = useState('Disbursement Detail Audit');
 
   const reportList = [
-    'Disbursement Summary',
+    'Disbursement Detail Audit',
     'Collection Variance',
     'Outstanding Advances',
-    'P&L Statement (YTD)',
-    'Enterprise Utilization',
-    'Audit Trail Export'
+    'Balance Sheet (Summary)',
+    'Balance Sheet (Details)',
+    'Enterprise Utilization'
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="flex flex-col h-full bg-sap-background">
+      
+      {/* Header */}
+      <div className="bg-white border-b border-sap-border px-6 py-4 flex justify-between items-center shrink-0">
         <div>
-          <nav className="flex gap-2 text-[11px] text-slate-400 uppercase tracking-wider mb-1 font-bold">
-            <span>Operations</span>
-            <span>/</span>
-            <span className="text-blue-600">Reporting Engine</span>
-          </nav>
-          <h1 className="text-2xl font-bold font-display text-slate-900 leading-tight">Financial Intelligence Center</h1>
+          <div className="flex items-center gap-2 text-[10px] text-sap-text-secondary uppercase tracking-widest font-bold mb-1">
+            <span>Decision Intelligence</span>
+            <i className="fa-solid fa-chevron-right text-[8px]"></i>
+            <span className="text-sap-primary">Reporting Hub</span>
+          </div>
+          <h1 className="text-xl font-semibold text-sap-text tracking-tight">Enterprise Analytics</h1>
         </div>
         <div className="flex gap-2">
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-md text-xs font-bold shadow-sm hover:bg-blue-700 transition">
-            <i className="fa-solid fa-calendar-days mr-2"></i> Custom Date Range
+          <button className="px-4 py-1.5 border border-sap-border bg-white text-sap-text rounded text-xs font-bold hover:bg-slate-50 transition flex items-center gap-2">
+            <i className="fa-solid fa-file-excel text-emerald-600"></i>
+            Export Excel
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        
-        {/* Report Sidebar */}
-        <div className="lg:col-span-1 space-y-4">
-          <div className="bg-white p-4 border rounded-lg shadow-sm space-y-1">
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Available Reports</h3>
-            {reportList.map(rep => (
-              <button
-                key={rep}
-                onClick={() => setReportType(rep)}
-                className={`w-full text-left px-3 py-2 rounded text-xs font-semibold transition ${
-                  reportType === rep ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600' : 'text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                {rep}
-              </button>
-            ))}
-          </div>
+      <div className="shrink-0">
+        <ReusableTabs 
+          tabs={['Analytics', 'Ledger Reports', 'Invoices']} 
+          activeTab={activeSubTab} 
+          onTabChange={(tab) => setActiveSubTab('Reporting Hub', tab)}
+        />
+      </div>
 
-          <div className="bg-slate-50 p-4 border rounded-lg space-y-3">
-            <h4 className="text-[10px] font-bold text-slate-500 uppercase">Export Templates</h4>
-            <div className="space-y-2">
-              <button className="w-full flex items-center justify-between p-2 bg-white border rounded hover:border-blue-400 transition text-[11px]">
-                <span className="flex items-center gap-2"><i className="fa-solid fa-file-excel text-emerald-600"></i> XLSX Ledger</span>
-                <i className="fa-solid fa-download text-slate-300"></i>
-              </button>
-              <button className="w-full flex items-center justify-between p-2 bg-white border rounded hover:border-blue-400 transition text-[11px]">
-                <span className="flex items-center gap-2"><i className="fa-solid fa-file-pdf text-rose-600"></i> PDF Statement</span>
-                <i className="fa-solid fa-download text-slate-300"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Report Preview */}
-        <div className="lg:col-span-3 space-y-6">
-          <div className="bg-white border rounded-lg shadow-sm flex flex-col min-h-[600px]">
-            <div className="p-5 border-b flex justify-between items-center">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900">{reportType}</h3>
-                <p className="text-[11px] text-slate-400 mt-1">Generated: 2026-07-10 07:30 UTC • Parameters: Global Aggregation</p>
-              </div>
-              <div className="flex gap-2">
-                <button className="p-2 text-slate-400 hover:text-slate-600 transition"><i className="fa-solid fa-print"></i></button>
-                <button className="p-2 text-slate-400 hover:text-slate-600 transition"><i className="fa-solid fa-share-nodes"></i></button>
+      <div className="flex-1 overflow-y-auto p-6">
+        {activeSubTab === 'Analytics' && (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 animate-in fade-in duration-300">
+            {/* Sidebar */}
+            <div className="lg:col-span-1 space-y-4">
+              <div className="sap-card p-4 space-y-1">
+                <h3 className="text-[10px] font-bold text-sap-text-secondary uppercase tracking-widest mb-3">Master Reports</h3>
+                {reportList.map(rep => (
+                  <button
+                    key={rep}
+                    onClick={() => setReportType(rep)}
+                    className={`w-full text-left px-3 py-2 rounded-sm text-[11px] font-bold transition flex items-center justify-between group ${
+                      reportType === rep ? 'bg-blue-50 text-sap-primary border-l-4 border-sap-primary' : 'text-sap-text-secondary hover:bg-slate-50'
+                    }`}
+                  >
+                    <span>{rep}</span>
+                    <i className={`fa-solid fa-chevron-right text-[9px] opacity-0 group-hover:opacity-100 transition ${reportType === rep ? 'opacity-100' : ''}`}></i>
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Mock Report Data Table */}
-            <div className="flex-1 overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 text-[10px] font-bold text-slate-500 uppercase border-b">
-                    <th className="p-4">Entity</th>
-                    <th className="p-4">Volume</th>
-                    <th className="p-4 text-right">Net Value ($)</th>
-                    <th className="p-4 text-right">Yield ($)</th>
-                    <th className="p-4 text-center">Status</th>
-                    <th className="p-4 text-right">Variance (%)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {companies.map(c => (
-                    <tr key={c.id} className="hover:bg-slate-50 transition">
-                      <td className="p-4">
-                        <div className="font-bold text-slate-900">{c.name}</div>
-                        <div className="text-[9px] text-slate-400">{c.code}</div>
-                      </td>
-                      <td className="p-4 font-mono">142 Txns</td>
-                      <td className="p-4 text-right font-mono font-bold">${(c.budgetUtilized * 1.2).toLocaleString()}</td>
-                      <td className="p-4 text-right font-mono text-emerald-700">${(c.budgetUtilized * 0.05).toLocaleString()}</td>
-                      <td className="p-4 text-center">
-                        <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[9px] font-bold uppercase tracking-tight">Cleared</span>
-                      </td>
-                      <td className="p-4 text-right font-mono text-slate-400">+0.12%</td>
-                    </tr>
-                  ))}
-                  <tr className="bg-slate-50 font-bold border-t-2">
-                    <td className="p-4 text-slate-900 uppercase tracking-tighter">Aggregated Totals</td>
-                    <td className="p-4 font-mono">284 Txns</td>
-                    <td className="p-4 text-right font-mono text-slate-950">${companies.reduce((sum, c) => sum + c.budgetUtilized * 1.2, 0).toLocaleString()}</td>
-                    <td className="p-4 text-right font-mono text-emerald-800">${companies.reduce((sum, c) => sum + c.budgetUtilized * 0.05, 0).toLocaleString()}</td>
-                    <td className="p-4"></td>
-                    <td className="p-4 text-right text-emerald-600">0.00% Variance</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            {/* Preview Panel */}
+            <div className="lg:col-span-3 space-y-6">
+              <div className="sap-card flex flex-col min-h-[600px] overflow-hidden">
+                <div className="p-5 border-b bg-white flex justify-between items-center">
+                  <div>
+                    <h3 className="text-sm font-bold text-sap-text uppercase tracking-tight">{reportType}</h3>
+                    <p className="text-[10px] text-sap-text-secondary mt-1 font-mono uppercase tracking-tighter font-bold">
+                      System Generated: 2026-07-10 07:30 UTC • Parameters: Global Aggregation
+                    </p>
+                  </div>
+                </div>
 
-            <div className="p-4 bg-slate-50 border-t flex justify-center">
-              <nav className="flex gap-1">
-                <button className="px-3 py-1 bg-white border rounded text-[10px] hover:bg-slate-50 transition">Previous</button>
-                <button className="px-3 py-1 bg-blue-600 text-white border border-blue-600 rounded text-[10px]">1</button>
-                <button className="px-3 py-1 bg-white border rounded text-[10px] hover:bg-slate-50 transition">Next</button>
-              </nav>
+                {/* Data Table */}
+                <div className="flex-1 overflow-x-auto bg-white">
+                  {reportType === 'Disbursement Detail Audit' ? (
+                    <table className="w-full text-left text-[11px] border-collapse min-w-[900px]">
+                      <thead>
+                        <tr className="bg-slate-50 text-[10px] font-bold text-sap-text-secondary uppercase border-b tracking-tight">
+                          <th className="p-4">Reference</th>
+                          <th className="p-4">Beneficiary</th>
+                          <th className="p-4">Entity Unit</th>
+                          <th className="p-4 text-right">Gross Amount</th>
+                          <th className="p-4 text-right">Fee Yield</th>
+                          <th className="p-4 text-right">Net Value</th>
+                          <th className="p-4 text-center">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y font-mono">
+                        {transactions.map(txn => (
+                          <tr key={txn.id} className="sap-table-row hover:bg-slate-50/50 transition">
+                            <td className="p-4 font-bold text-sap-primary uppercase">{txn.id}</td>
+                            <td className="p-4">
+                              <div className="font-bold text-sap-text font-sans">{txn.employeeName}</div>
+                              <div className="text-[9px] text-sap-text-secondary uppercase font-bold tracking-widest">{txn.employeeId}</div>
+                            </td>
+                            <td className="p-4">
+                              <div className="font-bold text-sap-text font-sans">{txn.companyName}</div>
+                              <div className="text-[9px] text-sap-text-secondary uppercase font-bold tracking-widest">GL: 1400-001</div>
+                            </td>
+                            <td className="p-4 text-right font-bold text-sap-text">${txn.amount.toLocaleString()}</td>
+                            <td className="p-4 text-right font-bold text-sap-success">${txn.feeAmount.toLocaleString()}</td>
+                            <td className="p-4 text-right font-bold text-sap-primary">${txn.netDisbursed.toLocaleString()}</td>
+                            <td className="p-4 text-center">
+                              <span className={`px-2 py-0.5 rounded-sm text-[9px] font-bold uppercase border ${
+                                txn.status === 'Disbursed' ? 'bg-emerald-50 text-sap-success border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'
+                              }`}>
+                                {txn.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="p-20 text-center text-slate-300 italic font-bold uppercase tracking-widest text-xs">
+                      Rendering Analytical Model View...
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {activeSubTab === 'Invoices' && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+             <div className="grid grid-cols-1 gap-6">
+               {invoices.map(inv => (
+                 <div key={inv.id} className="sap-card overflow-hidden bg-white border-l-4 border-l-sap-primary">
+                    <div className="p-4 border-b bg-slate-50 flex justify-between items-center">
+                      <div>
+                        <h4 className="text-[12px] font-bold text-sap-text uppercase tracking-tight">{inv.companyName}</h4>
+                        <p className="text-[10px] text-sap-text-secondary font-bold uppercase tracking-widest mt-0.5">{inv.billingPeriod} • Invoice #{inv.id}</p>
+                      </div>
+                      <span className={`px-2 py-1 rounded-sm text-[10px] font-bold uppercase border ${
+                        inv.status === 'Sent' ? 'bg-blue-50 text-sap-primary border-blue-200' : 'bg-emerald-50 text-sap-success border-emerald-200'
+                      }`}>
+                        {inv.status}
+                      </span>
+                    </div>
+                    <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+                      <div className="space-y-1">
+                        <div className="text-[9px] text-sap-text-secondary font-bold uppercase tracking-widest">Service Revenue</div>
+                        <div className="text-lg font-mono font-bold text-sap-text">${inv.totalServiceFees.toLocaleString()}</div>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="text-[9px] text-sap-text-secondary font-bold uppercase tracking-widest">Disbursed Volume</div>
+                        <div className="text-lg font-mono font-bold text-sap-text">${inv.totalDisbursements.toLocaleString()}</div>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="text-[9px] text-sap-text-secondary font-bold uppercase tracking-widest">Repayment Pool</div>
+                        <div className="text-lg font-mono font-bold text-sap-text">${inv.totalRepayments.toLocaleString()}</div>
+                      </div>
+                      <div className="space-y-1 bg-sap-shell text-white p-3 rounded-sm shadow-xl">
+                        <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Net Payable (MMK)</div>
+                        <div className="text-xl font-mono font-bold text-sap-primary tracking-tighter">${inv.netPayable.toLocaleString()}</div>
+                      </div>
+                    </div>
+                    <div className="px-6 pb-6">
+                      <div className="border-t border-sap-border pt-4">
+                        <h5 className="text-[10px] font-bold text-sap-text-secondary uppercase tracking-widest mb-3">Line Item Itemization</h5>
+                        <div className="space-y-2">
+                          {inv.lineItems.map(item => (
+                            <div key={item.id} className="flex justify-between items-center text-[11px] p-2 bg-slate-50 rounded-sm hover:bg-blue-50 transition border border-transparent hover:border-blue-100">
+                              <span className="font-bold text-sap-text uppercase tracking-tight">{item.serviceName} ({item.count} Actions)</span>
+                              <span className="font-mono font-bold text-sap-text">${item.amount.toLocaleString()}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                 </div>
+               ))}
+             </div>
+          </div>
+        )}
       </div>
     </div>
   );
